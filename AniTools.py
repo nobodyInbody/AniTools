@@ -1,7 +1,7 @@
 import MaxPlus
 from pymxs import runtime as rt
 from PySide2 import QtWidgets, QtCore, QtGui
-
+# 바이패드는 사전형으로 생각해 볼 것
 class bipedSelect():
     rt = pymxs.runtime
     m_limbNames = (
