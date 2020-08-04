@@ -1,8 +1,9 @@
-import pymxs
-from PySide2 import QtWidgets, QtCore, QtGui
+import MaxPlus
+from pymxs import runtime as rt
+from PySide2 import QtWidgets, QtCore, QtGui
 
-class bipedSelect(self):
-    rt = pymxs.untime
+class bipedSelect():
+    rt = pymxs.runtime
     m_limbNames = (
         rt.Name('larm'),
         rt.Name('rarm'),
@@ -93,43 +94,58 @@ class bipedSelect(self):
     m_bipName = ''
     m_com = None
     m_bipNodes = ()
-    def __init__(self, node):
-        if rt.GetClassName(node) is not rt.Biped():
+    def __init__(self, node = None):
+        if node is None:
             return False
+        self.m_com = node
+        m_bipNodes = self.GetBipedBoneList()
     def GetBipedBoneList(self):
         nodes = []
-        for name in m_limbNames:
+        for name in self.m_limbNames:
             temp_list = []
             for i in range(1,20):
                 node = None
-                node = rt.biped.getNode(self.m_com, name , link=i)
+                node = self.rt.biped.getNode(self.m_com, name , link=i)
                 if node is not None:
                     temp_list.append(node)
             nodes.append(temp_list)
-        #RootName = rt.getNodeByName(bipName)
+        return tuple(nodes)
     def GetChindNode(self, node):
         pass
-    def selectHead(self):
-        pass
+    def select(self, index, link_index):
+        self.m_bipNodes[index]
     def selectMode(self, biped_node, sub_node):
         pass
-class animationRange(self):
+class animationRange():
     m_animSet_list= []
     def __init__(sefl):
         pass
     def add_animSet(sefl):
         pass
-class MainWindow(QtWidgets.Qwidget):
+class BipedMainWindow(QtWidgets.QDialog):
     m_maxScriptPath_str = u""
-    def __init__(self):
+    def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
+        super(BipedMainWindow, self).__init__(parent)
         bip_ms = ''
+        biped = bipedSelect(rt.getnodeByName('Bip001'))
+        self.CreditLayout()
+        self.show()
+    def AddHeadButton(self, layout):
+        head_button = QtWidgets.QPushButton(u"H", default = False, autoDefault = False)
+        head_button.clicked.connect(lambda : self.SaveMaxFile(isVersionUp_bool = False))
+        layout.addWidget(head_button)
     def BipedSelectLayout(self, parent_layout):
         biped_main_layout = QtWidgets.QVBoxLayout()
-        biped_head_layout = QtWidgets.QH
-        parent_layout.add(biped_main_layout)
+        biped_head_layout = QtWidgets.QHBoxLayout()
+        self.AddHeadButton(biped_head_layout)
+        parent_layout.addLayout(biped_main_layout)
     def CreditLayout(self):
         main_layout = QtWidgets.QVBoxLayout()
-        BipedSelectLayout(main_layout)
-        
+        self.BipedSelectLayout(main_layout)
+        self.setLayout(main_layout)
+    def selectNode(self, limb_name, link_index):
+        self.biped.select(limb_name, link_index)
     def CreateWindows(self):
         pass
+
+BipedMainWindow()
