@@ -1,0 +1,11 @@
+{    
+        "editor.acceptSuggestionOnEnter": "on",
+        "python.autoComplete.extraPaths": [ 
+            "C:/Program Files/Autodesk/3ds Max 2018",
+            "C:/Program Files/Autodesk/3ds Max 2018/MaxPlus.py",
+            "C:/Program Files/Autodesk/3ds Max 2018/MaxPlusExtend.py",
+            ],
+        "python.pythonPath": "c:\\Program Files\\Autodesk\\3ds Max 2018\\3dsmaxpy.exe",
+        "python.linting.enabled": true,
+        "cSpell.enabled": false
+    }
