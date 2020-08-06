@@ -1,4 +1,5 @@
 import MaxPlus
+from MaxPlus import DisplayFilters_GetCount
 from pymxs import runtime as rt
 from PySide2 import QtWidgets, QtCore, QtGui
 # 바이패드는 사전형으로 생각해 볼 것
@@ -25,17 +26,7 @@ class bipedSelect():
         rt.Name('pony2'),
         rt.Name('prop1'),
         rt.Name('prop2'),
-        rt.Name('prop3'),
-        rt.Name('ifArmTwist'),
-        rt.Name('rfArmTwist'),
-        rt.Name('lUparmTwist'),
-        rt.Name('rUparmTwist'),
-        rt.Name('lThighTwist'),
-        rt.Name('rThighTwist'),
-        rt.Name('lCalfTwist'),
-        rt.Name('rCalfTwist'),
-        rt.Name('lHorseTwist'),
-        rt.Name('rHorseTwist')
+        rt.Name('prop3')
     )
     m_twistNames = (
         rt.Name('ifArmTwist'),
@@ -112,21 +103,25 @@ class bipedSelect():
         self.m_bipNodes = self.GetBipedBoneList()
     def GetBipedBoneList(self):
         nodes_dis = {}
-        for name in self.m_limbNames:
+        bip_maxlinks =  rt.biped.maxNumLinks (self.m_com)
+        twin_maxlinks = rt.biped.maxTwistLinks(self.m_com)
+        self.AddBipedNodeKeys(dict = nodes_dis, name_list = self.m_limbNames, maxLinks = bip_maxlinks)
+        self.AddBipedNodeKeys(dict = nodes_dis, name_list = self.m_twistNames, maxLinks = twin_maxlinks)
+        return nodes_dis
+    def AddBipedNodeKeys(self, dict = {}, name_list = [], maxLinks = 0):
+        for name in name_list:
             key = str(name)
             node_list = []
             node = None
             node = rt.biped.getNode(self.m_com, name , link=1)
             if node is not None:
-                maxIndex = rt.biped.maxNumLinks(node)
                 node_list.append(node)
-                for i in range(2,maxIndex):
+                for i in range(2,maxLinks):
                     subNode = rt.biped.getNode(self.m_com, name , link=i)
                     if subNode is not None:
                         node_list.append(subNode)
             value = tuple(node_list)
-            nodes_dis[key] = value
-        return nodes_dis
+            dict[key] = value
     def GetChindNode(self, node):
         pass
     def select(self, name = '', index = 0):
@@ -151,6 +146,8 @@ class animationRange():
 class BipedMainWindow(QtWidgets.QDialog):
     m_maxScriptPath_str = u""
     m_biped = None
+    m_bip_name_label = '대상 : {bip_name}'
+    m_default_color = QtGui.QColor.light
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
         super(BipedMainWindow, self).__init__(parent)
         bip_ms = ''
@@ -158,21 +155,57 @@ class BipedMainWindow(QtWidgets.QDialog):
         if self.m_biped.m_com is not None:
             self.CreditLayout()
             self.show()
+    def CreditSelectButton(self, layout , limb_name ='', index = 0, button_text = ''):
+        button = QtWidgets.QPushButton(button_text, default = False, autoDefault = False)
+        #button.setStyleSheet('QPushButton {background-color: %s}' % 'light')
+        button.clicked.connect(lambda : self.selectNode(limb_name=limb_name,link_index = index))
+        layout.addWidget(button)
     def AddHeadButton(self, layout):
+        ponytail1_button = QtWidgets.QPushButton(u"Ponytail1", default = False, autoDefault = False)
+        ponytail1_button.clicked.connect(lambda : self.selectNode(limb_name='pony1',link_index = 0))
+        layout.addWidget(ponytail1_button)
         head_button = QtWidgets.QPushButton(u"Head", default = False, autoDefault = False)
+        #head_button.setStyleSheet('QPushButton {background-color:  rgba(8, 110, 134, 0.0)}')
         head_button.clicked.connect(lambda : self.selectNode(limb_name='head',link_index = 0))
-        #head_button.clicked.connect(self.TestPrint)
         layout.addWidget(head_button)
-        return layout
+        ponytail2_button = QtWidgets.QPushButton(u"Ponytail1", default = False, autoDefault = False)
+        ponytail2_button.clicked.connect(lambda : self.selectNode(limb_name='pony2',link_index = 0))
+        layout.addWidget(ponytail2_button)
+        return 
+    def AddRHandButton(self, layout, taregt_name = ''):
+        if not taregt_name in self.m_biped.m_bipNodes:
+            return None
+        target = self.m_biped.m_bipNodes[taregt_name]
+        for i in range(0,len(target)):
+            self.CreditSelectButton(layout, taregt_name, i)
     def BipedSelectLayout(self, parent_layout):
         biped_main_layout = QtWidgets.QVBoxLayout()
         biped_head_layout = QtWidgets.QHBoxLayout()
-        biped_head_layout = self.AddHeadButton(biped_head_layout)
+        self.AddHeadButton(biped_head_layout)
         biped_main_layout.addLayout(biped_head_layout)
+        # body_layout
+        biped_body_layout = QtWidgets.QHBoxLayout()
+        biped_r_arm_layout = QtWidgets.QVBoxLayout()
+        self.AddRHandButton(biped_r_arm_layout, 'rArm')
+        biped_body_layout.addLayout(biped_r_arm_layout)
+        spine_layout = QtWidgets.QVBoxLayout()
+        self.AddRHandButton(spine_layout, 'spine')
+        biped_body_layout.addLayout(spine_layout)
+        biped_l_arm_layout = QtWidgets.QVBoxLayout()
+        self.AddRHandButton(biped_l_arm_layout, 'lArm')
+        biped_body_layout.addLayout(biped_l_arm_layout)
+        #
+        biped_main_layout.addLayout(biped_body_layout)
         parent_layout.addLayout(biped_main_layout)
         return parent_layout
+    def AddBipedName(self, parent_layout):
+        lable_text = self.m_bip_name_label.format(bip_name = self.m_biped.m_com.name)
+        name_qlable = QtWidgets.QLabel(lable_text)
+        #name_qlable.setText(name)
+        parent_layout.addWidget(name_qlable)
     def CreditLayout(self):
         main_layout = QtWidgets.QVBoxLayout()
+        self.AddBipedName(main_layout)
         main_layout = self.BipedSelectLayout(main_layout)
         self.setLayout(main_layout)
     def selectNode(self, limb_name = '', link_index = 0):

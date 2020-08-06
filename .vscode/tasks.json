@@ -19,11 +19,12 @@
                 "isDefault": true
             },
             "presentation": {
-                "echo": true,
-                "reveal": "silent",
+                "echo": false,
+                "reveal": "always",
                 "focus": false,
-                "panel": "shared"
-            }
+                "panel": "new"
+            },
+            "problemMatcher": []
         }
     ]
 }
