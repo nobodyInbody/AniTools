@@ -147,7 +147,10 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_maxScriptPath_str = u""
     m_biped = None
     m_bip_name_label = '대상 : {bip_name}'
-    m_default_color = QtGui.QColor.light
+    m_default_color = QtGui.QColor(100,100,100)
+    m_right_color = QtGui.QColor(6, 134, 6)
+    m_mid_color = QtGui.QColor(8, 110, 134)
+    m_lift_color = QtGui.QColor(28, 28, 177)
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
         super(BipedMainWindow, self).__init__(parent)
         bip_ms = ''
@@ -165,6 +168,9 @@ class BipedMainWindow(QtWidgets.QDialog):
         ponytail1_button.clicked.connect(lambda : self.selectNode(limb_name='pony1',link_index = 0))
         layout.addWidget(ponytail1_button)
         head_button = QtWidgets.QPushButton(u"Head", default = False, autoDefault = False)
+        color = QtGui.QPalette()
+        color.setColor(QtGui.QPalette.Button, self.m_mid_color)
+        head_button.setPalette(color)
         #head_button.setStyleSheet('QPushButton {background-color:  rgba(8, 110, 134, 0.0)}')
         head_button.clicked.connect(lambda : self.selectNode(limb_name='head',link_index = 0))
         layout.addWidget(head_button)
