@@ -6,7 +6,7 @@ from PySide2 import QtWidgets, QtCore, QtGui
 # 바이패드는 사전형으로 생각해 볼 것
 class bipedSelect():
     #rt = pymxs.runtime
-    m_enable_log = True
+    m_enable_log = False
     m_limbNames = (
         rt.Name('larm'),
         rt.Name('rarm'),
@@ -42,7 +42,7 @@ class bipedSelect():
         rt.Name('lHorseTwist'),
         rt.Name('rHorseTwist')
     )
-    m_bipName = ''
+    m_bipName = u''
     m_com = None
     m_bipNodes = {}
     def __init__(self, node = None):
@@ -52,6 +52,7 @@ class bipedSelect():
         self.log(u'바이패드노드 정보의 생성 대상은 {}입니다.'.format(node.name))
         self.m_com = node
         self.m_bipNodes = self.GetBipedBoneList()
+        self.m_bipName = self.m_com.name
         self.log(u'바이패드 노드 정보 생성 완료')
     def log(self, text):
         if self.m_enable_log:
@@ -108,11 +109,12 @@ class animationRange():
     def add_animSet(sefl):
         pass
 class BipedMainWindow(QtWidgets.QDialog):
-    m_enable_log = True
+    m_title_text = u'Biped Select Tool'
+    m_enable_log = False
     m_maxScriptPath_str = u""
     m_biped = None
     m_biped_list = ()
-    m_bip_name_label = '대상 :'
+    m_bip_name_label = u'대상 :'
     m_default_color = QtGui.QColor(100,100,100)
     m_right_color = QtGui.QColor(6, 134, 6)
     m_mid_color = QtGui.QColor(8, 110, 134)
@@ -120,16 +122,15 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_com_color = QtGui.QColor(135, 6, 6)
     m_button_w_setMinimumSize = 5
     m_button_h_setMinimumSize = 20
-    m_layout_bipedSelect = None
+    m_layout_main = None
+    m_select_tabWidget = QtWidgets.QTabWidget()
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
         super(BipedMainWindow, self).__init__(parent)
-        bip_ms = ''
+        self.setWindowTitle(self.m_title_text)
         self.m_biped_list = self.GetBipedComs()
         #self.m_biped = bipedSelect(rt.getnodeByName('Bip001'))
-        #if self.m_biped.m_com is not None:
-        #    self.CreditLayout()
-        #    self.show()
-        self.CreditLayout()
+        if self.m_biped is not None:
+            self.CreditLayout()
         self.show()
     def log(self, text):
         if self.m_enable_log:
@@ -151,6 +152,9 @@ class BipedMainWindow(QtWidgets.QDialog):
             self.log(node.name)
             biped_class = bipedSelect(node)
             bipeds.append(biped_class)
+        if len(bipeds) > 0:
+            self.m_biped = bipeds[0]
+            self.log(u'기본 바이패드로 {}가 선택되었습니다.'.format(self.m_biped.m_bipName))
         return tuple(bipeds)
     def GetQPaletteData(self, qpalette):
         alternateBase_qbrush = qpalette.alternateBase()
@@ -192,12 +196,24 @@ class BipedMainWindow(QtWidgets.QDialog):
             if add_name:
                 name = self.m_biped.GetPartName(target[i])
             self.CreditSelectButton(layout, taregt_name, i, name, button_color)
-    def SepBipSelectLayout(self, parent_layout):
-        self.m_layout_bipedSelect = QtWidgets.QVBoxLayout()
+    def CreditBipedSelectTab(self, layout):
+        self.log(u'선랙트 탭을 생성한다.')
+        self.m_select_tabWidget = QtWidgets.QTabWidget()
+        tab_tayout = QtWidgets.QVBoxLayout(self.m_select_tabWidget)
+        for bip in self.m_biped_list:
+            self.m_biped = bip
+            new_tab = QtWidgets.QWidget()
+            new_layout = self.SepBipSelectLayout()
+            new_tab.setLayout(new_layout)
+            self.m_select_tabWidget.addTab(new_tab, self.m_biped.m_bipName)
+        self.m_select_tabWidget.currentChanged.connect(self.ChangeBipedSet)
+        layout.addWidget(self.m_select_tabWidget)
+    def SepBipSelectLayout(self):
+        layout_bipedSelect = QtWidgets.QVBoxLayout()
         # 상단
         biped_head_layout = QtWidgets.QHBoxLayout()
         self.AddHeadButton(biped_head_layout)
-        self.m_layout_bipedSelect.addLayout(biped_head_layout)
+        layout_bipedSelect.addLayout(biped_head_layout)
         # 중단
         biped_body_layout = QtWidgets.QHBoxLayout()
         biped_r_arm_layout = QtWidgets.QVBoxLayout()
@@ -209,7 +225,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         biped_l_arm_layout = QtWidgets.QVBoxLayout()
         self.AddButtons(biped_l_arm_layout, 'lArm', self.m_lift_color, add_name = True)
         biped_body_layout.addLayout(biped_l_arm_layout)
-        self.m_layout_bipedSelect.addLayout(biped_body_layout)
+        layout_bipedSelect.addLayout(biped_body_layout)
         # 중심
         biped_mid_layout = QtWidgets.QVBoxLayout()
         biped_com_layout = QtWidgets.QHBoxLayout()
@@ -224,7 +240,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.AddButtons(biped_porp_layout, 'prop2', self.m_mid_color, add_name = True)
         self.AddButtons(biped_porp_layout, 'prop3', self.m_mid_color, add_name = True)
         biped_mid_layout.addLayout(biped_porp_layout)
-        self.m_layout_bipedSelect.addLayout(biped_mid_layout)
+        layout_bipedSelect.addLayout(biped_mid_layout)
         # 하단
         biped_leg_layout = QtWidgets.QHBoxLayout()
         biped_r_leg_layout = QtWidgets.QVBoxLayout()
@@ -233,10 +249,10 @@ class BipedMainWindow(QtWidgets.QDialog):
         biped_l_leg_layout = QtWidgets.QVBoxLayout()
         self.AddButtons(biped_l_leg_layout, 'lleg', self.m_lift_color, add_name = True)
         biped_leg_layout.addLayout(biped_l_leg_layout)
-        self.m_layout_bipedSelect.addLayout(biped_leg_layout)
+        layout_bipedSelect.addLayout(biped_leg_layout)
         #
-        parent_layout.addLayout(self.m_layout_bipedSelect)
-        return parent_layout
+        #parent_layout.addLayout(layout_bipedSelect)
+        return layout_bipedSelect
     def SetBipTitleLayout(self, parent_layout):
         self.log(u'바이패드 선택 레이아웃을 생성한다.')
         title_layout = QtWidgets.QHBoxLayout()
@@ -244,24 +260,23 @@ class BipedMainWindow(QtWidgets.QDialog):
         title_layout.addWidget(name_qlable)
         qcombobox = QtWidgets.QComboBox()
         self.SetBipedSelectQComboBox(qcombobox)
-        self.m_biped = self.m_biped_list[0]
         title_layout.addWidget(qcombobox)
         parent_layout.addLayout(title_layout)
     def CreditLayout(self):
         self.log(u'메인 레이아웃 생성한다.')
-        main_layout = QtWidgets.QVBoxLayout()
-        self.SetBipTitleLayout(main_layout)
+        self.m_layout_main = QtWidgets.QVBoxLayout()
+        #self.SetBipTitleLayout(self.m_layout_main)
         if not self.m_biped is None:
-            main_layout = self.SepBipSelectLayout(main_layout)
-        self.setLayout(main_layout)
+            self.CreditBipedSelectTab(self.m_layout_main)
+        self.setLayout(self.m_layout_main)
     def SetBipedSelectQComboBox(self, qcombobox):
         self.log(u'바이패드를 선택하는 메뉴를 추가한다.')
         for bip in self.m_biped_list:
             qcombobox.addItem(bip.m_com.name)
         qcombobox.currentIndexChanged.connect(self.ChangeBipedSet)
     def ChangeBipedSet(self, index):
+        self.log(u'{}을 선택하였습니다.'.format(self.m_lift_color))
         self.m_biped = self.m_biped_list[index]
-
     def selectNode(self, limb_name = '', link_index = 0):
         self.m_biped.select(limb_name, link_index)
     def TestPrint(self):
