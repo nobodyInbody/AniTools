@@ -1,6 +1,5 @@
 import MaxPlus
 import timeit
-from MaxPlus import DisplayFilters_GetCount
 from pymxs import runtime as rt
 from PySide2 import QtWidgets, QtCore, QtGui
 # 바이패드는 사전형으로 생각해 볼 것
@@ -185,7 +184,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         if not taregt_name in self.m_biped.m_bipNodes:
             return None
         target = self.m_biped.m_bipNodes[taregt_name]
-        # 흠 나중에 선택하지 못한 바이패드를 한버넹 선택하는 기능도 있으면 좋을듯 해서 변수하나 만들어둠
+        # 흠 나중에 선택하지 못한 바이패드를 한번에 선택하는 기능도 있으면 좋을듯 해서 변수하나 만들어둠
         need_all_button = False
         # ui에 너무 많은 버튼이 들어가지 않게 제한
         if max_limit > len(target):
