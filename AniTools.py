@@ -188,10 +188,6 @@ class BipedMainWindow(QtWidgets.QDialog):
             biped_tp = biped_tp[::-1]
         # 흠 나중에 선택하지 못한 바이패드를 한번에 선택하는 기능도 있으면 좋을듯 해서 변수하나 만들어둠
         need_all_button = False
-        # ui에 너무 많은 버튼이 들어가지 않게 제한
-        if max_limit > len(biped_tp):
-            max_limit = len(biped_tp)
-            need_all_button = True
         for bip in biped_tp:
             name = ''
             if add_name:
