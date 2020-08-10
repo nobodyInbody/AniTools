@@ -180,21 +180,23 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.AddButtons(pony2_layout, 'pony2', self.m_right_color, add_name = True)
         layout.addLayout(pony2_layout)
         return 
-    def AddButtons(self, layout, taregt_name = '', button_color = QtGui.QColor(100,100,100), add_name = False, max_limit = 6):
+    def AddButtons(self, layout, taregt_name = '', button_color = QtGui.QColor(100,100,100), add_name = False, max_limit = 6, revers = False):
         if not taregt_name in self.m_biped.m_bipNodes:
             return None
-        target = self.m_biped.m_bipNodes[taregt_name]
+        biped_tp = self.m_biped.m_bipNodes[taregt_name]
+        if revers:
+            biped_tp = biped_tp[::-1]
         # 흠 나중에 선택하지 못한 바이패드를 한번에 선택하는 기능도 있으면 좋을듯 해서 변수하나 만들어둠
         need_all_button = False
         # ui에 너무 많은 버튼이 들어가지 않게 제한
-        if max_limit > len(target):
-            max_limit = len(target)
+        if max_limit > len(biped_tp):
+            max_limit = len(biped_tp)
             need_all_button = True
-        for i in range(0,max_limit):
+        for bip in biped_tp:
             name = ''
             if add_name:
-                name = self.m_biped.GetPartName(target[i])
-            self.CreditSelectButton(layout, taregt_name, i, name, button_color)
+                name = self.m_biped.GetPartName(bip)
+            self.CreditSelectButton(layout, taregt_name, biped_tp.index(bip), name, button_color)
     def CreditBipedSelectTab(self, layout):
         self.log(u'선랙트 탭을 생성한다.')
         self.m_select_tabWidget = QtWidgets.QTabWidget()
@@ -219,7 +221,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.AddButtons(biped_r_arm_layout, 'rArm', self.m_right_color, add_name = True)
         biped_body_layout.addLayout(biped_r_arm_layout)
         spine_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(spine_layout, 'spine', self.m_mid_color, add_name = True)
+        self.AddButtons(spine_layout, 'spine', self.m_mid_color, add_name = True, revers = True)
         biped_body_layout.addLayout(spine_layout)
         biped_l_arm_layout = QtWidgets.QVBoxLayout()
         self.AddButtons(biped_l_arm_layout, 'lArm', self.m_lift_color, add_name = True)
