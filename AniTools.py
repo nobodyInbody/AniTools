@@ -130,6 +130,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         #self.m_biped = bipedSelect(rt.getnodeByName('Bip001'))
         if self.m_biped is not None:
             self.CreditLayout()
+        #self.setBaseSize(QtCore.QSize(195,350))
         self.show()
     def log(self, text):
         if self.m_enable_log:
@@ -164,6 +165,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         button = QtWidgets.QPushButton(button_text, default = False, autoDefault = False)
         button.clicked.connect(lambda : self.selectNode(limb_name=limb_name,link_index = index))
         button.setMinimumSize(self.m_button_w_setMinimumSize,self.m_button_h_setMinimumSize)
+        #button.setBaseSize(QtCore.QSize(50, 20))
         qpalette = button.palette()
         qpalette.setColor(QtGui.QPalette.Button, button_color)
         button.setPalette(qpalette)
