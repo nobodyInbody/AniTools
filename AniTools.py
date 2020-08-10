@@ -261,13 +261,18 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.SetBipedSelectQComboBox(qcombobox)
         title_layout.addWidget(qcombobox)
         parent_layout.addLayout(title_layout)
+    def CreateTCBLayout(self, parent_layout):
+        pass
     def CreditLayout(self):
         self.log(u'메인 레이아웃 생성한다.')
         self.m_layout_main = QtWidgets.QVBoxLayout()
         #self.SetBipTitleLayout(self.m_layout_main)
         if not self.m_biped is None:
             self.CreditBipedSelectTab(self.m_layout_main)
+        #Tcb조정
+        self.CreateTCBLayout(self.m_layout_main)
         self.setLayout(self.m_layout_main)
+        
     def SetBipedSelectQComboBox(self, qcombobox):
         self.log(u'바이패드를 선택하는 메뉴를 추가한다.')
         for bip in self.m_biped_list:
