@@ -1,0 +1,8 @@
+name "AniToos"
+version 1.00
+
+copy AniTools.py to $userScripts\SEO\AniTolls
+drop "Seo_AniTools.mcr"
+run "Seo_AniTools.mcr"
+
+clear temp on reset 
