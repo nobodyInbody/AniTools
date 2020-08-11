@@ -1,7 +1,7 @@
 macroScript Seo_AniTools
 category:"_AniSeoHyun"
 tooltip:"Seo_AniTools"
-icon:#("AniTools", 8)
+icon:#("Maintoolbar", 11)
 (
     python.ExecuteFile (getDir #userScripts +"\\SEO\\AniTolls\\AniTools.py")
 )
