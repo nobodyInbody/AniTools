@@ -77,8 +77,11 @@ class bipedSelect():
                 node_list.append(node)
                 for i in range(2,maxLinks):
                     subNode = rt.biped.getNode(self.m_com, name , link=i)
-                    if subNode is not None:
-                        node_list.append(subNode)
+                    if subNode is None:
+                        break
+                    node_list.append(subNode)
+                    #if subNode is not None:
+                    #    node_list.append(subNode)
             value = tuple(node_list)
             dict[key] = value
     def GetChindNode(self, node):
