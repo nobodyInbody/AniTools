@@ -123,7 +123,7 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_lift_color = QtGui.QColor(28, 28, 177)
     m_com_color = QtGui.QColor(135, 6, 6)
     m_button_w_setMinimumSize = 5
-    m_button_h_setMinimumSize = 20
+    m_button_h_setMinimumSize = 14
     m_layout_main = None
     m_select_tabWidget = QtWidgets.QTabWidget()
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
