@@ -2,6 +2,12 @@ import MaxPlus
 import timeit
 from pymxs import runtime as rt
 from PySide2 import QtWidgets, QtCore, QtGui
+class AniToolsLog():
+    m_Text = u'1.0 바이패드 선택'
+    def __init__(self):
+        pass
+    def Get(self):
+        return self.m_Text
 class BipedLimbName():
     lram = 'larm',
     rarm = 'rarm'
@@ -34,7 +40,8 @@ class BipedLimbName():
     rCalfTwist = 'rCalfTwist'
     lHorseTwist = 'lHorseTwist'
     rHorseTwist = 'rHorseTwist'
-    
+    def __init__(self):
+        pass
 class bipedSelect():
     #rt = pymxs.runtime
     m_enable_log = False
@@ -164,9 +171,10 @@ class animationRange():
     def add_animSet(sefl):
         pass
 class BipedMainWindow(QtWidgets.QDialog):
+    m_file_log = AniToolsLog()
     m_bipName = BipedLimbName()
     m_title_text = u'Biped Select Tool'
-    m_enable_log = True
+    m_enable_log = False
     m_maxScriptPath_str = u""
     m_biped = None
     m_biped_list = ()
@@ -182,7 +190,8 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_select_tabWidget = QtWidgets.QTabWidget()
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
         super(BipedMainWindow, self).__init__(parent)
-        self.setWindowTitle(self.m_title_text)
+        title_text = u'{} - {}'.format(self.m_title_text, self.m_file_log.Get())
+        self.setWindowTitle(title_text)
         self.m_biped_list = self.GetBipedComs()
         #self.m_biped = bipedSelect(rt.getnodeByName('Bip001'))
         if self.m_biped is not None:
