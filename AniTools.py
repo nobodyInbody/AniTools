@@ -288,18 +288,20 @@ class BipedMainWindow(QtWidgets.QDialog):
         biped_r_foot_layout = QtWidgets.QVBoxLayout()
         self.AddButtons(biped_r_foot_layout, 'rleg', self.m_right_color, add_name = True)
         biped_r_leg_layout.addLayout(biped_r_foot_layout)
-        toes_count, link_count = self.m_biped.GetToesCount()
-        self.log(u'rToes {}개, 링크{}개'.format(str(toes_count),str(link_count)))
-        #target_nodes = self.m_biped.m_bipNodes['rtoes']
-        biped_r_toes_layout = QtWidgets.QVBoxLayout()
-        for i in range(0, link_count):
-            link_layout = QtWidgets.QHBoxLayout()
-            target_index  = i
-            for link_index in range(0, toes_count ):
-                self.CreditSelectButton(link_layout, 'rtoes', (target_index), '', self.m_right_color)
-                target_index = target_index + link_count
-            biped_r_toes_layout.addLayout(link_layout)
-        biped_r_leg_layout.addLayout(biped_r_toes_layout)
+        #toes_count, link_count = self.m_biped.GetToesCount()
+        #self.log(u'rToes {}개, 링크{}개'.format(str(toes_count),str(link_count)))
+        ##target_nodes = self.m_biped.m_bipNodes['rtoes']
+        #biped_r_toes_layout = QtWidgets.QVBoxLayout()
+        #for i in range(0, link_count):
+        #    link_layout = QtWidgets.QHBoxLayout()
+        #    target_index  = i
+        #    for link_index in range(0, toes_count ):
+        #        self.CreditSelectButton(link_layout, 'rtoes', (target_index), '', self.m_right_color)
+        #        target_index = target_index + link_count
+        #    biped_r_toes_layout.addLayout(link_layout)
+        #biped_r_leg_layout.addLayout(biped_r_toes_layout)
+        toes_count_tp = self.m_biped.GetToesCount()
+        self.CreditPhalanxLayout(biped_r_leg_layout,'rtoes', toes_count_tp, self.m_right_color)
         biped_leg_layout.addLayout(biped_r_leg_layout)
         biped_tail_layout = QtWidgets.QVBoxLayout()
         self.AddButtons(biped_tail_layout, 'tail', self.m_mid_color, add_name = True)
