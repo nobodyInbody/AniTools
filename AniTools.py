@@ -2,7 +2,39 @@ import MaxPlus
 import timeit
 from pymxs import runtime as rt
 from PySide2 import QtWidgets, QtCore, QtGui
-# 바이패드는 사전형으로 생각해 볼 것
+class BipedLimbName():
+    lram = 'larm',
+    rarm = 'rarm'
+    lfingers  = 'lfingers'
+    rfingers = 'rfingers'
+    lleg = 'lleg'
+    rleg = 'rleg'
+    ltoes = 'ltoes'
+    rtoes = 'rtoes'
+    spine = 'spine'
+    tail = 'tail'
+    head = 'head'
+    pelvis = 'pelvis'
+    com_v = 'vertical'
+    com_h = 'horizontal'
+    footprints =  'footprints'
+    neck = 'neck'
+    pony1 = 'pony1'
+    pony2 = 'pony2'
+    prop1 = 'prop1'
+    prop2 = 'prop2'
+    prop3 = 'prop3'
+    ifArmTwist = 'ifArmTwist'
+    rfArmTwist = 'rfArmTwist'
+    lUparmTwist = 'lUparmTwist'
+    rUparmTwist = 'rUparmTwist'
+    lThighTwist = 'lThighTwist'
+    rThighTwist = 'rThighTwist'
+    lCalfTwist = 'lCalfTwist'
+    rCalfTwist = 'rCalfTwist'
+    lHorseTwist = 'lHorseTwist'
+    rHorseTwist = 'rHorseTwist'
+    
 class bipedSelect():
     #rt = pymxs.runtime
     m_enable_log = False
@@ -132,6 +164,7 @@ class animationRange():
     def add_animSet(sefl):
         pass
 class BipedMainWindow(QtWidgets.QDialog):
+    m_bipName = BipedLimbName()
     m_title_text = u'Biped Select Tool'
     m_enable_log = True
     m_maxScriptPath_str = u""
@@ -262,14 +295,19 @@ class BipedMainWindow(QtWidgets.QDialog):
         # 중단
         biped_body_layout = QtWidgets.QHBoxLayout()
         biped_r_arm_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_r_arm_layout, 'rArm', self.m_right_color, add_name = True)
+        finger_count_tp = self.m_biped.GetFingerCount()
+        biped_r_hand_layout = QtWidgets.QVBoxLayout()
+        self.AddButtons(biped_r_hand_layout, 'rArm', self.m_right_color, add_name = True)
+        biped_r_arm_layout.addLayout(biped_r_hand_layout)
+        self.CreditPhalanxLayout(biped_r_hand_layout,'rfingers', finger_count_tp, self.m_right_color, revers = True)
         biped_body_layout.addLayout(biped_r_arm_layout)
         spine_layout = QtWidgets.QVBoxLayout()
         self.AddButtons(spine_layout, 'spine', self.m_mid_color, add_name = True, revers = True)
         biped_body_layout.addLayout(spine_layout)
-        biped_l_arm_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_l_arm_layout, 'lArm', self.m_lift_color, add_name = True)
-        biped_body_layout.addLayout(biped_l_arm_layout)
+        biped_l_hand_layout = QtWidgets.QVBoxLayout()
+        self.AddButtons(biped_l_hand_layout, 'lArm', self.m_lift_color, add_name = True)
+        self.CreditPhalanxLayout(biped_l_hand_layout,'lfingers', finger_count_tp, self.m_lift_color)
+        biped_body_layout.addLayout(biped_l_hand_layout)
         layout_bipedSelect.addLayout(biped_body_layout)
         # 중심
         biped_mid_layout = QtWidgets.QVBoxLayout()
@@ -289,11 +327,11 @@ class BipedMainWindow(QtWidgets.QDialog):
         # 하단
         biped_leg_layout = QtWidgets.QHBoxLayout()
         biped_r_leg_layout = QtWidgets.QVBoxLayout()
+        toes_count_tp = self.m_biped.GetToesCount()
         ## 발가락
         biped_r_foot_layout = QtWidgets.QVBoxLayout()
         self.AddButtons(biped_r_foot_layout, 'rleg', self.m_right_color, add_name = True)
         biped_r_leg_layout.addLayout(biped_r_foot_layout)
-        toes_count_tp = self.m_biped.GetToesCount()
         self.CreditPhalanxLayout(biped_r_leg_layout,'rtoes', toes_count_tp, self.m_right_color)
         biped_leg_layout.addLayout(biped_r_leg_layout)
         biped_tail_layout = QtWidgets.QVBoxLayout()
