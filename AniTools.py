@@ -181,7 +181,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         layout.addLayout(pony1_layout)
         hand_layout = QtWidgets.QVBoxLayout()
         self.AddButtons(hand_layout, 'head', self.m_mid_color, add_name = True)
-        self.AddButtons(hand_layout, 'neck', self.m_mid_color, add_name = True, max_limit = 1)
+        self.AddButtons(hand_layout, 'neck', self.m_mid_color, add_name = True, max_limit = 1, revers = True)
         layout.addLayout(hand_layout)
         pony2_layout = QtWidgets.QVBoxLayout()
         self.AddButtons(pony2_layout, 'pony2', self.m_right_color, add_name = True)
