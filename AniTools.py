@@ -104,6 +104,27 @@ class bipedSelect():
         if not len(name_list) == 0:
             part_name = name_list[-1]
         return part_name
+    def GetPhalanxCount(self, nodeName, bipName):
+        ''' return (phalanx_count, link_count) '''
+        phalanx_count = 0
+        link_count = 0
+        target_nodeName = nodeName
+        nodes = self.m_bipNodes[bipName]
+        for node in nodes:
+            if node.name.endswith(target_nodeName, 0,-1):
+                phalanx_count += 1
+        if phalanx_count > 0:
+            link_count = len(nodes)/phalanx_count
+        return (phalanx_count, link_count)
+    def GetToesCount(self):
+        ''' return (rtoes_count, link_count) '''
+        result = self.GetPhalanxCount('Toe','rtoes')
+        return result
+    def GetFingerCount(self):
+        ''' return (rfinger_count, link_count) '''
+        result = self.GetPhalanxCount('Finger','rfingers')
+        return result
+
 class animationRange():
     m_animSet_list= []
     def __init__(sefl):
@@ -202,6 +223,19 @@ class BipedMainWindow(QtWidgets.QDialog):
             if add_name:
                 name = self.m_biped.GetPartName(bip)
             self.CreditSelectButton(layout, taregt_name, biped_tp.index(bip), name, button_color)
+    def CreditPhalanxLayout(self, parent_layout, limb_name, target_count = (0,0), button_color = QtGui.QColor(100,100,100)):
+        ''' parent_layout add button 
+        Is use finger or Tose'''
+        toes_count, link_count = target_count
+        biped_r_toes_layout = QtWidgets.QVBoxLayout()
+        for i in range(0, link_count):
+            link_layout = QtWidgets.QHBoxLayout()
+            target_index  = i
+            for link_index in range(0, toes_count ):
+                self.CreditSelectButton(link_layout, limb_name, (target_index), '', button_color)
+                target_index = target_index + link_count
+            biped_r_toes_layout.addLayout(link_layout)
+        parent_layout.addLayout(biped_r_toes_layout)
     def CreditBipedSelectTab(self, layout):
         self.log(u'선랙트 탭을 생성한다.')
         self.m_select_tabWidget = QtWidgets.QTabWidget()
@@ -250,7 +284,22 @@ class BipedMainWindow(QtWidgets.QDialog):
         # 하단
         biped_leg_layout = QtWidgets.QHBoxLayout()
         biped_r_leg_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_r_leg_layout, 'rleg', self.m_right_color, add_name = True)
+        ## 발가락
+        biped_r_foot_layout = QtWidgets.QVBoxLayout()
+        self.AddButtons(biped_r_foot_layout, 'rleg', self.m_right_color, add_name = True)
+        biped_r_leg_layout.addLayout(biped_r_foot_layout)
+        toes_count, link_count = self.m_biped.GetToesCount()
+        self.log(u'rToes {}개, 링크{}개'.format(str(toes_count),str(link_count)))
+        #target_nodes = self.m_biped.m_bipNodes['rtoes']
+        biped_r_toes_layout = QtWidgets.QVBoxLayout()
+        for i in range(0, link_count):
+            link_layout = QtWidgets.QHBoxLayout()
+            target_index  = i
+            for link_index in range(0, toes_count ):
+                self.CreditSelectButton(link_layout, 'rtoes', (target_index), '', self.m_right_color)
+                target_index = target_index + link_count
+            biped_r_toes_layout.addLayout(link_layout)
+        biped_r_leg_layout.addLayout(biped_r_toes_layout)
         biped_leg_layout.addLayout(biped_r_leg_layout)
         biped_tail_layout = QtWidgets.QVBoxLayout()
         self.AddButtons(biped_tail_layout, 'tail', self.m_mid_color, add_name = True)
