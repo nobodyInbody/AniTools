@@ -112,7 +112,7 @@ class animationRange():
         pass
 class BipedMainWindow(QtWidgets.QDialog):
     m_title_text = u'Biped Select Tool'
-    m_enable_log = False
+    m_enable_log = True
     m_maxScriptPath_str = u""
     m_biped = None
     m_biped_list = ()
@@ -166,6 +166,8 @@ class BipedMainWindow(QtWidgets.QDialog):
         print(current_colorgroup)
     def CreditSelectButton(self, layout , limb_name ='', index = 0, button_text = '', button_color = QtGui.QColor(100,100,100)):
         button = QtWidgets.QPushButton(button_text, default = False, autoDefault = False)
+        self.log(limb_name)
+        self.log(str(index))
         button.clicked.connect(lambda : self.selectNode(limb_name=limb_name,link_index = index))
         button.setMinimumSize(self.m_button_w_setMinimumSize,self.m_button_h_setMinimumSize)
         #button.setBaseSize(QtCore.QSize(50, 20))
@@ -189,11 +191,13 @@ class BipedMainWindow(QtWidgets.QDialog):
         if not taregt_name in self.m_biped.m_bipNodes:
             return None
         biped_tp = self.m_biped.m_bipNodes[taregt_name]
+        rever_tp = biped_tp[::-1]
+        useing_up = biped_tp
         if revers:
-            biped_tp = biped_tp[::-1]
+            useing_up = biped_tp[::-1]
         # 흠 나중에 선택하지 못한 바이패드를 한번에 선택하는 기능도 있으면 좋을듯 해서 변수하나 만들어둠
         need_all_button = False
-        for bip in biped_tp:
+        for bip in useing_up:
             name = ''
             if add_name:
                 name = self.m_biped.GetPartName(bip)
