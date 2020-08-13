@@ -13,8 +13,8 @@ class AniToolsLog():
         return self.m_Text
 class BipedLimbName():
     bip_class = 'Biped_Object'
-    lram = 'larm'
-    rarm = 'rarm'
+    larm = 'lArm'
+    rarm = 'rArm'
     lfingers  = 'lfingers'
     rfingers = 'rfingers'
     lleg = 'lleg'
@@ -248,14 +248,14 @@ class BipedMainWindow(QtWidgets.QDialog):
         layout.addWidget(button)
     def AddHeadButton(self, layout):
         pony1_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(pony1_layout, 'pony1', self.m_right_color, add_name = True)
+        self.AddButtons(pony1_layout, self.m_bipName.pony1, self.m_right_color, add_name = True)
         layout.addLayout(pony1_layout)
         hand_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(hand_layout, 'head', self.m_mid_color, add_name = True)
-        self.AddButtons(hand_layout, 'neck', self.m_mid_color, add_name = True, max_limit = 1, revers = True)
+        self.AddButtons(hand_layout, self.m_bipName.head, self.m_mid_color, add_name = True)
+        self.AddButtons(hand_layout, self.m_bipName.neck, self.m_mid_color, add_name = True, max_limit = 1, revers = True)
         layout.addLayout(hand_layout)
         pony2_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(pony2_layout, 'pony2', self.m_right_color, add_name = True)
+        self.AddButtons(pony2_layout, self.m_bipName.pony2, self.m_right_color, add_name = True)
         layout.addLayout(pony2_layout)
         return 
     def AddButtons(self, layout, taregt_name = '', button_color = m_default_color, add_name = False, max_limit = 6, revers = False):
@@ -314,31 +314,31 @@ class BipedMainWindow(QtWidgets.QDialog):
         biped_r_arm_layout = QtWidgets.QVBoxLayout()
         finger_count_tp = self.m_biped.GetFingerCount()
         biped_r_hand_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_r_hand_layout, 'rArm', self.m_right_color, add_name = True)
+        self.AddButtons(biped_r_hand_layout, self.m_bipName.rarm, self.m_right_color, add_name = True)
         biped_r_arm_layout.addLayout(biped_r_hand_layout)
-        self.CreditPhalanxLayout(biped_r_hand_layout,'rfingers', finger_count_tp, self.m_right_color, revers = True)
+        self.CreditPhalanxLayout(biped_r_hand_layout, self.m_bipName.rfingers, finger_count_tp, self.m_right_color, revers = True)
         biped_body_layout.addLayout(biped_r_arm_layout)
         spine_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(spine_layout, 'spine', self.m_mid_color, add_name = True, revers = True)
+        self.AddButtons(spine_layout, self.m_bipName.spine, self.m_mid_color, add_name = True, revers = True)
         biped_body_layout.addLayout(spine_layout)
         biped_l_hand_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_l_hand_layout, 'lArm', self.m_lift_color, add_name = True)
-        self.CreditPhalanxLayout(biped_l_hand_layout,'lfingers', finger_count_tp, self.m_lift_color)
+        self.AddButtons(biped_l_hand_layout, self.m_bipName.larm, self.m_lift_color, add_name = True)
+        self.CreditPhalanxLayout(biped_l_hand_layout,self.m_bipName.lfingers, finger_count_tp, self.m_lift_color)
         biped_body_layout.addLayout(biped_l_hand_layout)
         layout_bipedSelect.addLayout(biped_body_layout)
         # 중심
         biped_mid_layout = QtWidgets.QVBoxLayout()
         biped_com_layout = QtWidgets.QHBoxLayout()
         #self.AddButtons(biped_com_layout, 'vertical', self.m_mid_color, add_name = True)
-        self.AddButtons(biped_com_layout, 'horizontal', self.m_com_color, add_name = True)
-        self.AddButtons(biped_com_layout, 'pelvis', self.m_mid_color, add_name = True)
+        self.AddButtons(biped_com_layout, self.m_bipName.com_h, self.m_com_color, add_name = True)
+        self.AddButtons(biped_com_layout, self.m_bipName.pelvis, self.m_mid_color, add_name = True)
         # trun은 못찾네?
         #self.AddButtons(biped_com_layout, 'turn', self.m_mid_color, add_name = True)
         biped_mid_layout.addLayout(biped_com_layout)
         biped_porp_layout = QtWidgets.QHBoxLayout()
-        self.AddButtons(biped_porp_layout, 'prop1', self.m_mid_color, add_name = True)
-        self.AddButtons(biped_porp_layout, 'prop2', self.m_mid_color, add_name = True)
-        self.AddButtons(biped_porp_layout, 'prop3', self.m_mid_color, add_name = True)
+        self.AddButtons(biped_porp_layout, self.m_bipName.prop1, self.m_mid_color, add_name = True)
+        self.AddButtons(biped_porp_layout, self.m_bipName.prop2, self.m_mid_color, add_name = True)
+        self.AddButtons(biped_porp_layout, self.m_bipName.prop3, self.m_mid_color, add_name = True)
         biped_mid_layout.addLayout(biped_porp_layout)
         layout_bipedSelect.addLayout(biped_mid_layout)
         # 하단
@@ -347,19 +347,19 @@ class BipedMainWindow(QtWidgets.QDialog):
         toes_count_tp = self.m_biped.GetToesCount()
         ## 발가락
         biped_r_foot_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_r_foot_layout, 'rleg', self.m_right_color, add_name = True)
+        self.AddButtons(biped_r_foot_layout, self.m_bipName.rleg, self.m_right_color, add_name = True)
         biped_r_leg_layout.addLayout(biped_r_foot_layout)
-        self.CreditPhalanxLayout(biped_r_leg_layout,'rtoes', toes_count_tp, self.m_right_color)
+        self.CreditPhalanxLayout(biped_r_leg_layout,self.m_bipName.rtoes, toes_count_tp, self.m_right_color)
         biped_leg_layout.addLayout(biped_r_leg_layout)
         biped_tail_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_tail_layout, 'tail', self.m_mid_color, add_name = True)
+        self.AddButtons(biped_tail_layout, self.m_bipName.tail, self.m_mid_color, add_name = True)
         biped_leg_layout.addLayout(biped_tail_layout)
         biped_l_leg_layout = QtWidgets.QVBoxLayout()
         ## 왼발
         biped_l_foot_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_l_foot_layout, 'lleg', self.m_lift_color, add_name = True)
+        self.AddButtons(biped_l_foot_layout, self.m_bipName.lleg, self.m_lift_color, add_name = True)
         biped_l_leg_layout.addLayout(biped_l_foot_layout)
-        self.CreditPhalanxLayout(biped_l_leg_layout,'ltoes', toes_count_tp, self.m_lift_color, revers = True)
+        self.CreditPhalanxLayout(biped_l_leg_layout, self.m_bipName.ltoes, toes_count_tp, self.m_lift_color, revers = True)
         biped_leg_layout.addLayout(biped_l_leg_layout)
         layout_bipedSelect.addLayout(biped_leg_layout)
         #
