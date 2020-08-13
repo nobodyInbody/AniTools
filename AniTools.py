@@ -5,13 +5,15 @@ from PySide2 import QtWidgets, QtCore, QtGui
 in_file_time = timeit.default_timer()
 class AniToolsLog():
     #m_Text = u'1.0 바이패드 선택'
-    m_Text = u'1.1 선택시 버그 수정'
+    #m_Text = u'1.1 선택시 버그 수정'
+    m_Text = u'1.11 #이름클래스 적용'
     def __init__(self):
         pass
     def Get(self):
         return self.m_Text
 class BipedLimbName():
-    lram = 'larm',
+    bip_class = 'Biped_Object'
+    lram = 'larm'
     rarm = 'rarm'
     lfingers  = 'lfingers'
     rfingers = 'rfingers'
@@ -213,8 +215,8 @@ class BipedMainWindow(QtWidgets.QDialog):
         #self.log(u'오브젝트 검색 시작')
         start_time = timeit.default_timer()
         for node in rt.objects:
-            if str(rt.classOf(node)) == 'Biped_Object':
-                com = rt.biped.getNode(node, rt.Name('vertical'), link = 1)
+            if str(rt.classOf(node)) == self.m_bipName.bip_class:
+                com = rt.biped.getNode(node, rt.Name(self.m_bipName.com_v), link = 1)
                 if not com in biped_com_list:
                     biped_com_list.append(com)
         end_time = timeit.default_timer()
