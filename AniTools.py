@@ -2,6 +2,7 @@ import MaxPlus
 import timeit
 from pymxs import runtime as rt
 from PySide2 import QtWidgets, QtCore, QtGui
+in_file_time = timeit.default_timer()
 class AniToolsLog():
     m_Text = u'1.0 바이패드 선택'
     def __init__(self):
@@ -87,11 +88,11 @@ class bipedSelect():
         if node is None:
             print('node is None')
             return None
-        self.log(u'바이패드노드 정보의 생성 대상은 {}입니다.'.format(node.name))
+        #self.log(u'바이패드노드 정보의 생성 대상은 {}입니다.'.format(node.name))
         self.m_com = node
         self.m_bipNodes = self.GetBipedBoneList()
         self.m_bipName = self.m_com.name
-        self.log(u'바이패드 노드 정보 생성 완료')
+        #self.log(u'바이패드 노드 정보 생성 완료')
     def log(self, text):
         if self.m_enable_log:
             print(text)
@@ -99,11 +100,11 @@ class bipedSelect():
         nodes_dis = {}
         bip_maxlinks =  rt.biped.maxNumLinks (self.m_com)
         twin_maxlinks = rt.biped.maxTwistLinks(self.m_com)
-        self.log(u'바이패드 기본 노드 정보를 생성 중입니다.')
+        #self.log(u'바이패드 기본 노드 정보를 생성 중입니다.')
         start_time = timeit.default_timer()
         self.AddBipedNodeKeys(dict = nodes_dis, name_list = self.m_limbNames, maxLinks = bip_maxlinks)
-        self.log(u'완료 : {}'.format(timeit.default_timer() - start_time))
-        self.log(u'바이패드 트위스트 노드 정보를 생성 중입니다.')
+        #self.log(u'완료 : {}'.format(timeit.default_timer() - start_time))
+        #self.log(u'바이패드 트위스트 노드 정보를 생성 중입니다.')
         self.AddBipedNodeKeys(dict = nodes_dis, name_list = self.m_twistNames, maxLinks = twin_maxlinks)
         return nodes_dis
     def AddBipedNodeKeys(self, dict = {}, name_list = [], maxLinks = 0):
@@ -127,7 +128,7 @@ class bipedSelect():
         pass
     def select(self, name = '', index = 0):
         node = self.GetNode(name, index)
-        if node is not None:
+        if node is not None and rt.isValidNode(node):
             rt.select(node)
         #rt.gw.updateScreen()
         rt.redrawViews()
@@ -135,6 +136,8 @@ class bipedSelect():
         pass
     def GetNode(self, name = '', index = 0):
         node = None
+        if name not in self.m_bipNodes:
+            return node
         target = self.m_bipNodes[name]
         if (len(target) - 1) >= index :
             node = target[index]
@@ -206,7 +209,7 @@ class BipedMainWindow(QtWidgets.QDialog):
     def GetBipedComs(self):
         biped_com_list = []
         bipeds = []
-        self.log(u'오브젝트 검색 시작')
+        #self.log(u'오브젝트 검색 시작')
         start_time = timeit.default_timer()
         for node in rt.objects:
             if str(rt.classOf(node)) == 'Biped_Object':
@@ -214,25 +217,25 @@ class BipedMainWindow(QtWidgets.QDialog):
                 if not com in biped_com_list:
                     biped_com_list.append(com)
         end_time = timeit.default_timer()
-        self.log(u'검사종료 : {}'.format(end_time - start_time))
-        self.log(u'씬의 바이패드는 {}개가 있습니다.'.format(len(biped_com_list)))
+        #self.log(u'검사종료 : {}'.format(end_time - start_time))
+        #self.log(u'씬의 바이패드는 {}개가 있습니다.'.format(len(biped_com_list)))
         for node in biped_com_list:
-            self.log(node.name)
+            #self.log(node.name)
             biped_class = bipedSelect(node)
             bipeds.append(biped_class)
         if len(bipeds) > 0:
             self.m_biped = bipeds[0]
-            self.log(u'기본 바이패드로 {}가 선택되었습니다.'.format(self.m_biped.m_bipName))
+            #self.log(u'기본 바이패드로 {}가 선택되었습니다.'.format(self.m_biped.m_bipName))
         return tuple(bipeds)
     def GetQPaletteData(self, qpalette):
         alternateBase_qbrush = qpalette.alternateBase()
         base_qbrush = qpalette.base()
         current_colorgroup = qpalette.currentColorGroup()
-        print(current_colorgroup)
+        #print(current_colorgroup)
     def CreditSelectButton(self, layout , limb_name ='', index = 0, button_text = '', button_color = m_default_color):
         button = QtWidgets.QPushButton(button_text, default = False, autoDefault = False)
-        self.log(limb_name)
-        self.log(str(index))
+        #self.log(limb_name)
+        #self.log(str(index))
         button.clicked.connect(lambda : self.selectNode(limb_name=limb_name,link_index = index))
         button.setMinimumSize(self.m_button_w_setMinimumSize,self.m_button_h_setMinimumSize)
         #button.setBaseSize(QtCore.QSize(50, 20))
@@ -286,7 +289,7 @@ class BipedMainWindow(QtWidgets.QDialog):
             biped_r_toes_layout.addLayout(link_layout)
         parent_layout.addLayout(biped_r_toes_layout)
     def CreditBipedSelectTab(self, layout):
-        self.log(u'선랙트 탭을 생성한다.')
+        #self.log(u'선랙트 탭을 생성한다.')
         self.m_select_tabWidget = QtWidgets.QTabWidget()
         tab_tayout = QtWidgets.QVBoxLayout(self.m_select_tabWidget)
         for bip in self.m_biped_list:
@@ -360,7 +363,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         #parent_layout.addLayout(layout_bipedSelect)
         return layout_bipedSelect
     def SetBipTitleLayout(self, parent_layout):
-        self.log(u'바이패드 선택 레이아웃을 생성한다.')
+        #self.log(u'바이패드 선택 레이아웃을 생성한다.')
         title_layout = QtWidgets.QHBoxLayout()
         name_qlable = QtWidgets.QLabel(self.m_bip_name_label)
         title_layout.addWidget(name_qlable)
@@ -371,7 +374,7 @@ class BipedMainWindow(QtWidgets.QDialog):
     def CreateTCBLayout(self, parent_layout):
         pass
     def CreditLayout(self):
-        self.log(u'메인 레이아웃 생성한다.')
+        #self.log(u'메인 레이아웃 생성한다.')
         self.m_layout_main = QtWidgets.QVBoxLayout()
         #self.SetBipTitleLayout(self.m_layout_main)
         if not self.m_biped is None:
@@ -381,12 +384,11 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.setLayout(self.m_layout_main)
         
     def SetBipedSelectQComboBox(self, qcombobox):
-        self.log(u'바이패드를 선택하는 메뉴를 추가한다.')
+        #self.log(u'바이패드를 선택하는 메뉴를 추가한다.')
         for bip in self.m_biped_list:
             qcombobox.addItem(bip.m_com.name)
         qcombobox.currentIndexChanged.connect(self.ChangeBipedSet)
     def ChangeBipedSet(self, index):
-        self.log(u'{}을 선택하였습니다.'.format(self.m_lift_color))
         self.m_biped = self.m_biped_list[index]
     def selectNode(self, limb_name = '', link_index = 0):
         self.m_biped.select(limb_name, link_index)
@@ -395,4 +397,7 @@ class BipedMainWindow(QtWidgets.QDialog):
     def CreateWindows(self):
         pass
 
+class_out_time = timeit.default_timer()
+print('클래스 읽기 완료시간 : {}'.format(str(class_out_time - in_file_time)))
 BipedMainWindow()
+print('클래스 실행 완료 시간 : {}'.format(str(timeit.default_timer() - class_out_time)))
