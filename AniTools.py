@@ -227,7 +227,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         base_qbrush = qpalette.base()
         current_colorgroup = qpalette.currentColorGroup()
         print(current_colorgroup)
-    def CreditSelectButton(self, layout , limb_name ='', index = 0, button_text = '', button_color = QtGui.QColor(100,100,100)):
+    def CreditSelectButton(self, layout , limb_name ='', index = 0, button_text = '', button_color = m_default_color):
         button = QtWidgets.QPushButton(button_text, default = False, autoDefault = False)
         self.log(limb_name)
         self.log(str(index))
@@ -250,7 +250,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.AddButtons(pony2_layout, 'pony2', self.m_right_color, add_name = True)
         layout.addLayout(pony2_layout)
         return 
-    def AddButtons(self, layout, taregt_name = '', button_color = QtGui.QColor(100,100,100), add_name = False, max_limit = 6, revers = False):
+    def AddButtons(self, layout, taregt_name = '', button_color = m_default_color, add_name = False, max_limit = 6, revers = False):
         if not taregt_name in self.m_biped.m_bipNodes:
             return None
         biped_tp = self.m_biped.m_bipNodes[taregt_name]
@@ -265,7 +265,7 @@ class BipedMainWindow(QtWidgets.QDialog):
             if add_name:
                 name = self.m_biped.GetPartName(bip)
             self.CreditSelectButton(layout, taregt_name, biped_tp.index(bip), name, button_color)
-    def CreditPhalanxLayout(self, parent_layout, limb_name, target_count = (0,0), button_color = QtGui.QColor(100,100,100), revers = False):
+    def CreditPhalanxLayout(self, parent_layout, limb_name, target_count = (0,0), button_color = m_default_color, revers = False):
         ''' parent_layout add button 
         Is use finger or Tose'''
         toes_count, link_count = target_count
