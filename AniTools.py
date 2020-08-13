@@ -4,6 +4,7 @@ from pymxs import runtime as rt
 from PySide2 import QtWidgets, QtCore, QtGui
 in_file_time = timeit.default_timer()
 class AniToolsLog():
+    #m_Text = u'1.0 바이패드 선택'
     m_Text = u'1.1 선택시 버그 수정'
     def __init__(self):
         pass
