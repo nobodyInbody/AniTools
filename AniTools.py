@@ -129,6 +129,8 @@ class bipedSelect():
         node = self.GetNode(name, index)
         if node is not None:
             rt.select(node)
+        #rt.gw.updateScreen()
+        rt.redrawViews()
     def selectMode(self, biped_node, sub_node):
         pass
     def GetNode(self, name = '', index = 0):
