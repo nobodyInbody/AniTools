@@ -1,5 +1,6 @@
 import MaxPlus
 import timeit
+import os
 from pymxs import runtime as rt
 from PySide2 import QtWidgets, QtCore, QtGui
 in_file_time = timeit.default_timer()
@@ -198,9 +199,11 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_layout_main = None
     m_select_tabWidget = QtWidgets.QTabWidget()
     #File
-    m_bip_path_folder_name = u'_BipFiles\\'
     m_bip_save_text_name = u'SaveBip'
+    m_bip_path_folder_name = u'_BipFiles\\'
     m_bip_extension = u'.bip'
+    m_bip_open_button_text = u'Open Folder'
+    m_bip_file_dir = u''
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
         super(BipedMainWindow, self).__init__(parent)
         title_text = u'{} - {}'.format(self.m_title_text, self.m_file_log.Get())
@@ -210,6 +213,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         if self.m_biped is not None:
             self.CreditLayout()
         #self.setBaseSize(QtCore.QSize(195,350))
+        self.m_bip_file_dir = os.path.join(rt.maxfilepath, self.m_bip_path_folder_name)
         self.show()
     def log(self, text):
         if self.m_enable_log:
@@ -386,17 +390,23 @@ class BipedMainWindow(QtWidgets.QDialog):
         save_bip_file_button = QtWidgets.QPushButton(self.m_bip_save_text_name, default = False, autoDefault = False)
         save_bip_file_button.clicked.connect(self.SaveBipFile)
         files_layout.addWidget(save_bip_file_button)
+        open_dir_button = QtWidgets.QPushButton(self.m_bip_open_button_text, default = False, autoDefault = False)
+        open_dir_button.clicked.connect(self.OpenBipDir)
+        files_layout.addWidget(open_dir_button)
         parent_layout.addLayout(files_layout)
     def SaveBipFile(self):
         self.log(u'SaveBipFile in')
-        path = rt.maxfilepath
-        file_name = rt.maxfilename[:-3]
+        file_name = rt.maxfilename[:-4]
         bip_name = self.m_biped.m_com.name
-        add_path = self.m_bip_path_folder_name
         extension = self.m_bip_extension
-        save_file_name = u'{path}{add_path}{file_name}_{bip_name}{extension}'.format(path = path, file_name = file_name, bip_name = bip_name, add_path = add_path, extension = extension)
+        file_path = self.m_bip_file_dir
+        if not os.path.isdir(file_path):
+            os.mkdir(file_path)
+        save_file_name = u'{file_path}{file_name}_{bip_name}{extension}'.format(file_path = file_path, file_name = file_name, bip_name = bip_name, extension = extension)
         self.log(save_file_name)
         rt.biped.saveBipFile(self.m_biped.m_com.controller, save_file_name)
+    def OpenBipDir(self):
+        rt.ShellLaunch(self.m_bip_file_dir, "")
     def CreditLayout(self):
         #self.log(u'메인 레이아웃 생성한다.')
         self.m_layout_main = QtWidgets.QVBoxLayout()
