@@ -184,7 +184,7 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_file_log = AniToolsLog()
     m_bipName = BipedLimbName()
     m_title_text = u'Biped Select Tool'
-    m_enable_log = True
+    m_enable_log = False
     m_maxScriptPath_str = u""
     m_biped = None
     m_biped_list = ()
