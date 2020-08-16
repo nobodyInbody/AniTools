@@ -6,7 +6,8 @@ in_file_time = timeit.default_timer()
 class AniToolsLog():
     #m_Text = u'1.0 바이패드 선택'
     #m_Text = u'1.1 선택시 버그 수정'
-    m_Text = u'1.11 #이름클래스 적용'
+    #m_Text = u'1.11 #이름클래스 적용'
+    m_Text = u'1.12 #bip저장'
     def __init__(self):
         pass
     def Get(self):
@@ -182,7 +183,7 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_file_log = AniToolsLog()
     m_bipName = BipedLimbName()
     m_title_text = u'Biped Select Tool'
-    m_enable_log = False
+    m_enable_log = True
     m_maxScriptPath_str = u""
     m_biped = None
     m_biped_list = ()
@@ -196,6 +197,10 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_button_h_setMinimumSize = 14
     m_layout_main = None
     m_select_tabWidget = QtWidgets.QTabWidget()
+    #File
+    m_bip_path_folder_name = u'_BipFiles\\'
+    m_bip_save_text_name = u'SaveBip'
+    m_bip_extension = u'.bip'
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
         super(BipedMainWindow, self).__init__(parent)
         title_text = u'{} - {}'.format(self.m_title_text, self.m_file_log.Get())
@@ -248,17 +253,17 @@ class BipedMainWindow(QtWidgets.QDialog):
         layout.addWidget(button)
     def AddHeadButton(self, layout):
         pony1_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(pony1_layout, self.m_bipName.pony1, self.m_right_color, add_name = True)
+        self.AddBipedSelectButtons(pony1_layout, self.m_bipName.pony1, self.m_right_color, add_name = True)
         layout.addLayout(pony1_layout)
         hand_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(hand_layout, self.m_bipName.head, self.m_mid_color, add_name = True)
-        self.AddButtons(hand_layout, self.m_bipName.neck, self.m_mid_color, add_name = True, max_limit = 1, revers = True)
+        self.AddBipedSelectButtons(hand_layout, self.m_bipName.head, self.m_mid_color, add_name = True)
+        self.AddBipedSelectButtons(hand_layout, self.m_bipName.neck, self.m_mid_color, add_name = True, max_limit = 1, revers = True)
         layout.addLayout(hand_layout)
         pony2_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(pony2_layout, self.m_bipName.pony2, self.m_right_color, add_name = True)
+        self.AddBipedSelectButtons(pony2_layout, self.m_bipName.pony2, self.m_right_color, add_name = True)
         layout.addLayout(pony2_layout)
         return 
-    def AddButtons(self, layout, taregt_name = '', button_color = m_default_color, add_name = False, max_limit = 6, revers = False):
+    def AddBipedSelectButtons(self, layout, taregt_name = '', button_color = m_default_color, add_name = False, max_limit = 6, revers = False):
         if not taregt_name in self.m_biped.m_bipNodes:
             return None
         biped_tp = self.m_biped.m_bipNodes[taregt_name]
@@ -314,31 +319,31 @@ class BipedMainWindow(QtWidgets.QDialog):
         biped_r_arm_layout = QtWidgets.QVBoxLayout()
         finger_count_tp = self.m_biped.GetFingerCount()
         biped_r_hand_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_r_hand_layout, self.m_bipName.rarm, self.m_right_color, add_name = True)
+        self.AddBipedSelectButtons(biped_r_hand_layout, self.m_bipName.rarm, self.m_right_color, add_name = True)
         biped_r_arm_layout.addLayout(biped_r_hand_layout)
         self.CreditPhalanxLayout(biped_r_hand_layout, self.m_bipName.rfingers, finger_count_tp, self.m_right_color, revers = True)
         biped_body_layout.addLayout(biped_r_arm_layout)
         spine_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(spine_layout, self.m_bipName.spine, self.m_mid_color, add_name = True, revers = True)
+        self.AddBipedSelectButtons(spine_layout, self.m_bipName.spine, self.m_mid_color, add_name = True, revers = True)
         biped_body_layout.addLayout(spine_layout)
         biped_l_hand_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_l_hand_layout, self.m_bipName.larm, self.m_lift_color, add_name = True)
+        self.AddBipedSelectButtons(biped_l_hand_layout, self.m_bipName.larm, self.m_lift_color, add_name = True)
         self.CreditPhalanxLayout(biped_l_hand_layout,self.m_bipName.lfingers, finger_count_tp, self.m_lift_color)
         biped_body_layout.addLayout(biped_l_hand_layout)
         layout_bipedSelect.addLayout(biped_body_layout)
         # 중심
         biped_mid_layout = QtWidgets.QVBoxLayout()
         biped_com_layout = QtWidgets.QHBoxLayout()
-        #self.AddButtons(biped_com_layout, 'vertical', self.m_mid_color, add_name = True)
-        self.AddButtons(biped_com_layout, self.m_bipName.com_h, self.m_com_color, add_name = True)
-        self.AddButtons(biped_com_layout, self.m_bipName.pelvis, self.m_mid_color, add_name = True)
+        #self.AddBipedSelectButtons(biped_com_layout, 'vertical', self.m_mid_color, add_name = True)
+        self.AddBipedSelectButtons(biped_com_layout, self.m_bipName.com_h, self.m_com_color, add_name = True)
+        self.AddBipedSelectButtons(biped_com_layout, self.m_bipName.pelvis, self.m_mid_color, add_name = True)
         # trun은 못찾네?
-        #self.AddButtons(biped_com_layout, 'turn', self.m_mid_color, add_name = True)
+        #self.AddBipedSelectButtons(biped_com_layout, 'turn', self.m_mid_color, add_name = True)
         biped_mid_layout.addLayout(biped_com_layout)
         biped_porp_layout = QtWidgets.QHBoxLayout()
-        self.AddButtons(biped_porp_layout, self.m_bipName.prop1, self.m_mid_color, add_name = True)
-        self.AddButtons(biped_porp_layout, self.m_bipName.prop2, self.m_mid_color, add_name = True)
-        self.AddButtons(biped_porp_layout, self.m_bipName.prop3, self.m_mid_color, add_name = True)
+        self.AddBipedSelectButtons(biped_porp_layout, self.m_bipName.prop1, self.m_mid_color, add_name = True)
+        self.AddBipedSelectButtons(biped_porp_layout, self.m_bipName.prop2, self.m_mid_color, add_name = True)
+        self.AddBipedSelectButtons(biped_porp_layout, self.m_bipName.prop3, self.m_mid_color, add_name = True)
         biped_mid_layout.addLayout(biped_porp_layout)
         layout_bipedSelect.addLayout(biped_mid_layout)
         # 하단
@@ -347,17 +352,17 @@ class BipedMainWindow(QtWidgets.QDialog):
         toes_count_tp = self.m_biped.GetToesCount()
         ## 발가락
         biped_r_foot_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_r_foot_layout, self.m_bipName.rleg, self.m_right_color, add_name = True)
+        self.AddBipedSelectButtons(biped_r_foot_layout, self.m_bipName.rleg, self.m_right_color, add_name = True)
         biped_r_leg_layout.addLayout(biped_r_foot_layout)
         self.CreditPhalanxLayout(biped_r_leg_layout,self.m_bipName.rtoes, toes_count_tp, self.m_right_color)
         biped_leg_layout.addLayout(biped_r_leg_layout)
         biped_tail_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_tail_layout, self.m_bipName.tail, self.m_mid_color, add_name = True)
+        self.AddBipedSelectButtons(biped_tail_layout, self.m_bipName.tail, self.m_mid_color, add_name = True)
         biped_leg_layout.addLayout(biped_tail_layout)
         biped_l_leg_layout = QtWidgets.QVBoxLayout()
         ## 왼발
         biped_l_foot_layout = QtWidgets.QVBoxLayout()
-        self.AddButtons(biped_l_foot_layout, self.m_bipName.lleg, self.m_lift_color, add_name = True)
+        self.AddBipedSelectButtons(biped_l_foot_layout, self.m_bipName.lleg, self.m_lift_color, add_name = True)
         biped_l_leg_layout.addLayout(biped_l_foot_layout)
         self.CreditPhalanxLayout(biped_l_leg_layout, self.m_bipName.ltoes, toes_count_tp, self.m_lift_color, revers = True)
         biped_leg_layout.addLayout(biped_l_leg_layout)
@@ -376,6 +381,22 @@ class BipedMainWindow(QtWidgets.QDialog):
         parent_layout.addLayout(title_layout)
     def CreateTCBLayout(self, parent_layout):
         pass
+    def CreateBipFileLayout(self, parent_layout):
+        files_layout = QtWidgets.QHBoxLayout()
+        save_bip_file_button = QtWidgets.QPushButton(self.m_bip_save_text_name, default = False, autoDefault = False)
+        save_bip_file_button.clicked.connect(self.SaveBipFile)
+        files_layout.addWidget(save_bip_file_button)
+        parent_layout.addLayout(files_layout)
+    def SaveBipFile(self):
+        self.log(u'SaveBipFile in')
+        path = rt.maxfilepath
+        file_name = rt.maxfilename[:-3]
+        bip_name = self.m_biped.m_com.name
+        add_path = self.m_bip_path_folder_name
+        extension = self.m_bip_extension
+        save_file_name = u'{path}{add_path}{file_name}_{bip_name}{extension}'.format(path = path, file_name = file_name, bip_name = bip_name, add_path = add_path, extension = extension)
+        self.log(save_file_name)
+        rt.biped.saveBipFile(self.m_biped.m_com.controller, save_file_name)
     def CreditLayout(self):
         #self.log(u'메인 레이아웃 생성한다.')
         self.m_layout_main = QtWidgets.QVBoxLayout()
@@ -383,6 +404,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         if not self.m_biped is None:
             self.CreditBipedSelectTab(self.m_layout_main)
         #Tcb조정
+        self.CreateBipFileLayout(self.m_layout_main)
         self.CreateTCBLayout(self.m_layout_main)
         self.setLayout(self.m_layout_main)
         
