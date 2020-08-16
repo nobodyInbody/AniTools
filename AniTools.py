@@ -385,6 +385,12 @@ class BipedMainWindow(QtWidgets.QDialog):
         parent_layout.addLayout(title_layout)
     def CreateTCBLayout(self, parent_layout):
         pass
+    def SetTCBPlantedKey(self, node):
+        pass
+    def SetTCBSlidingKey(self, node):
+        pass
+    def SetTCBSetFreeKey(self, node):
+        pass
     def CreateBipFileLayout(self, parent_layout):
         files_layout = QtWidgets.QHBoxLayout()
         save_bip_file_button = QtWidgets.QPushButton(self.m_bip_save_text_name, default = False, autoDefault = False)
