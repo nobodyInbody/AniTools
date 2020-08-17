@@ -260,15 +260,17 @@ class BipedMainWindow(QtWidgets.QDialog):
         layout.addWidget(button)
     def AddHeadButton(self, layout):
         pony1_layout = QtWidgets.QVBoxLayout()
-        self.AddBipedSelectButtons(pony1_layout, self.m_bipName.pony1, self.m_right_color, add_name = True)
-        layout.addLayout(pony1_layout)
+        pony1_button = self.AddBipedSelectButtons(pony1_layout, self.m_bipName.pony1, self.m_right_color, add_name = True)
+        if pony1_button:
+            layout.addLayout(pony1_layout)
         hand_layout = QtWidgets.QVBoxLayout()
         self.AddBipedSelectButtons(hand_layout, self.m_bipName.head, self.m_mid_color, add_name = True)
         self.AddBipedSelectButtons(hand_layout, self.m_bipName.neck, self.m_mid_color, add_name = True, revers = True)
         layout.addLayout(hand_layout)
         pony2_layout = QtWidgets.QVBoxLayout()
-        self.AddBipedSelectButtons(pony2_layout, self.m_bipName.pony2, self.m_right_color, add_name = True)
-        layout.addLayout(pony2_layout)
+        pony2_button = self.AddBipedSelectButtons(pony2_layout, self.m_bipName.pony2, self.m_right_color, add_name = True)
+        if pony2_button:
+            layout.addLayout(pony2_layout)
         return 
     def AddBipedSelectButtons(self, layout, taregt_name = '', button_color = m_default_color, add_name = False, max_limit = 6, revers = False):
         if not taregt_name in self.m_biped.m_bipNodes:
