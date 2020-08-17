@@ -8,7 +8,8 @@ class AniToolsLog():
     #m_Text = u'1.0 바이패드 선택'
     #m_Text = u'1.1 선택시 버그 수정'
     #m_Text = u'1.11 #이름클래스 적용'
-    m_Text = u'1.12 #bip저장'
+    #m_Text = u'1.12 #bip저장'
+    m_Text = u'1.13 #26 선택문제'
     def __init__(self):
         pass
     def Get(self):
@@ -212,6 +213,8 @@ class BipedMainWindow(QtWidgets.QDialog):
         #self.m_biped = bipedSelect(rt.getnodeByName('Bip001'))
         if self.m_biped is not None:
             self.CreditLayout()
+            #바이페드가 여러게 생성되었을 경우 초기값을 돌려줌
+            self.m_biped = self.m_biped_list[0]
         #self.setBaseSize(QtCore.QSize(195,350))
         self.m_bip_file_dir = os.path.join(rt.maxfilepath, self.m_bip_path_folder_name)
         self.show()
