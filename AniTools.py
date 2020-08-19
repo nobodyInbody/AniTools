@@ -9,7 +9,8 @@ class AniToolsLog():
     #m_Text = u'1.1 선택시 버그 수정'
     #m_Text = u'1.11 #이름클래스 적용'
     #m_Text = u'1.12 #bip저장'
-    m_Text = u'1.13 #26 선택문제'
+    #m_Text = u'1.13 #26 선택문제'
+    m_Text = u'1.14 #30 바이페드 전부 선택'
     def __init__(self):
         pass
     def Get(self):
@@ -90,12 +91,14 @@ class bipedSelect():
     m_bipName = u''
     m_com = None
     m_bipNodes = {}
+    m_bipedAll_nodes = []
     def __init__(self, node = None):
         if node is None:
             print('node is None')
             return None
         #self.log(u'바이패드노드 정보의 생성 대상은 {}입니다.'.format(node.name))
         self.m_com = node
+        self.m_bipedAll_nodes = []
         self.m_bipNodes = self.GetBipedBoneList()
         self.m_bipName = self.m_com.name
         #self.log(u'바이패드 노드 정보 생성 완료')
@@ -129,6 +132,7 @@ class bipedSelect():
                     #if subNode is not None:
                     #    node_list.append(subNode)
             value = tuple(node_list)
+            self.m_bipedAll_nodes.extend(node_list)
             dict[key] = value
     def GetChindNode(self, node):
         pass
@@ -187,8 +191,10 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_title_text = u'Biped Select Tool'
     m_enable_log = False
     m_maxScriptPath_str = u""
+    # Biped Select
     m_biped = None
     m_biped_list = ()
+    m_select_all_biped_text = 'All Biped'
     m_bip_name_label = u'대상 :'
     m_default_color = QtGui.QColor(100,100,100)
     m_right_color = QtGui.QColor(6, 134, 6)
@@ -319,6 +325,12 @@ class BipedMainWindow(QtWidgets.QDialog):
         layout.addWidget(self.m_select_tabWidget)
     def SepBipSelectLayout(self):
         layout_bipedSelect = QtWidgets.QVBoxLayout()
+        #최상단
+        top_layout = QtWidgets.QHBoxLayout()
+        select_all_biped_button = QtWidgets.QPushButton(self.m_select_all_biped_text, default = False, autoDefault = False)
+        select_all_biped_button.clicked.connect(self.SelectAllBiped)
+        top_layout.addWidget(select_all_biped_button)
+        layout_bipedSelect.addLayout(top_layout)
         # 상단
         biped_head_layout = QtWidgets.QHBoxLayout()
         self.AddHeadButton(biped_head_layout)
@@ -417,7 +429,9 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.log(save_file_name)
         rt.biped.saveBipFile(self.m_biped.m_com.controller, save_file_name)
     def OpenBipDir(self):
-        rt.ShellLaunch(self.m_bip_file_dir, "")
+        enable = rt.ShellLaunch(self.m_bip_file_dir, "")
+        if not enable:
+            pass
     def CreditLayout(self):
         #self.log(u'메인 레이아웃 생성한다.')
         self.m_layout_main = QtWidgets.QVBoxLayout()
@@ -438,6 +452,9 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.m_biped = self.m_biped_list[index]
     def selectNode(self, limb_name = '', link_index = 0):
         self.m_biped.select(limb_name, link_index)
+    def SelectAllBiped(self):
+        rt.select(self.m_biped.m_bipedAll_nodes)
+        rt.redrawViews()
     def TestPrint(self):
         print('test')
     def CreateWindows(self):
