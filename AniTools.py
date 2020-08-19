@@ -178,7 +178,27 @@ class bipedSelect():
         ''' return (rfinger_count, link_count) '''
         result = self.GetPhalanxCount('Finger','rfingers')
         return result
-
+class GetKey():
+    m_node = None
+    m_pos_keys = []
+    m_rot_keys = []
+    m_scl_keys = []
+    def __init__(self, node = None):
+        self.m_node = node
+    def GetBipedPosKeys(self, node):
+        m_posKeys = rt.biped.getTransform(node, rt.Name('pos'))
+        ctrl = node.controller
+        keys = ctrl.keys
+        for key in keys:
+            print(key.time)
+    def CopyKeys(self, nodes):
+        pass
+    def PasteKeys(self, nodes):
+        pass
+    def SetSliderTimeNextKeyFrame(self):
+        pass
+    def SetSliderTimePreviousKeyFrame(self):
+        pass
 class animationRange():
     m_animSet_list= []
     def __init__(sefl):
