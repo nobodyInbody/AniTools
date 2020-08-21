@@ -11,7 +11,7 @@ class AniToolsLog():
     #m_Text = u'1.12 #bip저장'
     #m_Text = u'1.13 #26 선택문제'
     #m_Text = u'1.14 #30 바이페드 전부 선택'
-    m_Text = u'1.14 #29 키 버튼'
+    m_Text = u'1.15 #29 키 버튼'
     def __init__(self):
         pass
     def Get(self):
