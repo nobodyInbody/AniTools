@@ -10,7 +10,8 @@ class AniToolsLog():
     #m_Text = u'1.11 #이름클래스 적용'
     #m_Text = u'1.12 #bip저장'
     #m_Text = u'1.13 #26 선택문제'
-    m_Text = u'1.14 #30 바이페드 전부 선택'
+    #m_Text = u'1.14 #30 바이페드 전부 선택'
+    m_Text = u'1.14 #29 키 버튼'
     def __init__(self):
         pass
     def Get(self):
@@ -180,24 +181,42 @@ class bipedSelect():
         return result
 class GetKey():
     m_node = None
+    m_currentFrame = 0
     m_pos_keys = []
     m_rot_keys = []
     m_scl_keys = []
+    m_obj_type_dic = {}
     def __init__(self, node = None):
         self.m_node = node
+        self.m_currentFrame = rt.currentTime
     def GetBipedPosKeys(self, node):
         m_posKeys = rt.biped.getTransform(node, rt.Name('pos'))
         ctrl = node.controller
         keys = ctrl.keys
         for key in keys:
             print(key.time)
+    def SetKey(self, node):
+        pass
     def CopyKeys(self, nodes):
         pass
     def PasteKeys(self, nodes):
         pass
-    def SetSliderTimeNextKeyFrame(self):
+
+class GetBipedKey(GetKey):
+    def __init__(self):
         pass
-    def SetSliderTimePreviousKeyFrame(self):
+    def SetKey(self, nodes):
+        for node in nodes:
+            ctrl = node.controller
+            if ctrl.rootNode == node:
+                rt.biped.addNewKey(ctrl.vertical.controller, rt.currentTime)
+                rt.biped.addNewKey(ctrl.horizontal.controller, rt.currentTime)
+                rt.biped.addNewKey(ctrl.turning.controller, rt.currentTime)
+            else:
+                rt.biped.addNewKey(ctrl, rt.currentTime)
+    def SetSliderTimeNextKeyFrame(self, node):
+        pass
+    def SetSliderTimePreviousKeyFrame(self, node):
         pass
 class animationRange():
     m_animSet_list= []
@@ -207,6 +226,7 @@ class animationRange():
         pass
 class BipedMainWindow(QtWidgets.QDialog):
     m_file_log = AniToolsLog()
+    m_key_class = GetBipedKey()
     m_bipName = BipedLimbName()
     m_title_text = u'Biped Select Tool'
     m_enable_log = False
@@ -225,6 +245,8 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_button_h_setMinimumSize = 14
     m_layout_main = None
     m_select_tabWidget = QtWidgets.QTabWidget()
+    #key
+    m_add_key_button_name = u'Set Key'
     #File
     m_bip_save_text_name = u'SaveBip'
     m_bip_path_folder_name = u'_BipFiles\\'
@@ -420,6 +442,14 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.SetBipedSelectQComboBox(qcombobox)
         title_layout.addWidget(qcombobox)
         parent_layout.addLayout(title_layout)
+    def CreateKeyLayout(self, parent_layout):
+        layout = QtWidgets.QHBoxLayout()
+        add_key_qbutton = QtWidgets.QPushButton(self.m_add_key_button_name, default = False, autoDefault = False)
+        add_key_qbutton.clicked.connect(self.AddNewKey)
+        layout.addWidget(add_key_qbutton)
+        parent_layout.addLayout(layout)
+    def AddNewKey(self):
+        self.m_key_class.SetKey(rt.selection)
     def CreateTCBLayout(self, parent_layout):
         pass
     def SetTCBPlantedKey(self, node):
@@ -458,6 +488,8 @@ class BipedMainWindow(QtWidgets.QDialog):
         #self.SetBipTitleLayout(self.m_layout_main)
         if not self.m_biped is None:
             self.CreditBipedSelectTab(self.m_layout_main)
+        #키 관련 버튼
+        self.CreateKeyLayout(self.m_layout_main)
         #Tcb조정
         self.CreateBipFileLayout(self.m_layout_main)
         self.CreateTCBLayout(self.m_layout_main)
