@@ -69,7 +69,7 @@ class bipedSelect():
         rt.Name('pelvis'),
         rt.Name('vertical'),
         rt.Name('horizontal'),
-        rt.Name('footprints'),
+        #rt.Name('footprints'),
         rt.Name('neck'),
         rt.Name('pony1'),
         rt.Name('pony2'),
@@ -195,6 +195,8 @@ class GetKey():
         keys = ctrl.keys
         for key in keys:
             print(key.time)
+    def GetKeyTimes(self, node):
+        pass
     def SetKey(self, node):
         pass
     def CopyKeys(self, nodes):
@@ -215,9 +217,41 @@ class GetBipedKey(GetKey):
             else:
                 rt.biped.addNewKey(ctrl, rt.currentTime)
     def SetSliderTimeNextKeyFrame(self, node):
-        pass
+        ctrl = node.controller
+        current_time = rt.currentTime
+        def getNextTime(current_time, key_list):
+            getKey = current_time
+            for key in key_list:
+                if current_time < key:
+                    getKey = key
+                    break
+            return getKey
+        if ctrl.rootNode == node:
+            key_list = [x.time for x in ctrl.vertical.controller.keys]
+            key_list += [x.time for x in ctrl.horizontal.controller.keys]
+            key_list += [x.time for x in ctrl.turning.controller.keys]
+            rt.sliderTime = getNextTime(current_time, sorted(key_list))
+        else:
+            key_list = [x.time for x in ctrl.controller.keys]
+            rt.sliderTime = getNextTime(current_time, sorted(key_list))
     def SetSliderTimePreviousKeyFrame(self, node):
-        pass
+        ctrl = node.controller
+        current_time = rt.currentTime
+        def getPreviousTime(current_time, key_list):
+            getKey = current_time
+            for key in key_list:
+                if current_time > key:
+                    getKey = key
+                    break
+            return getKey
+        if ctrl.rootNode == node:
+            key_list = [x.time for x in ctrl.vertical.controller.keys]
+            key_list += [x.time for x in ctrl.horizontal.controller.keys]
+            key_list += [x.time for x in ctrl.turning.controller.keys]
+            rt.sliderTime = getPreviousTime(current_time, sorted(key_list)[::-1])
+        else:
+            key_list = [x.time for x in ctrl.controller.keys]
+            rt.sliderTime = getPreviousTime(current_time, sorted(key_list)[::-1])
 class animationRange():
     m_animSet_list= []
     def __init__(sefl):
@@ -232,7 +266,7 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_enable_log = False
     m_maxScriptPath_str = u""
     # Biped Select
-    m_biped = None
+    m_biped_class = None
     m_biped_list = ()
     m_select_all_biped_text = 'All Biped'
     m_bip_name_label = u'대상 :'
@@ -258,11 +292,11 @@ class BipedMainWindow(QtWidgets.QDialog):
         title_text = u'{} - {}'.format(self.m_title_text, self.m_file_log.Get())
         self.setWindowTitle(title_text)
         self.m_biped_list = self.GetBipedComs()
-        #self.m_biped = bipedSelect(rt.getnodeByName('Bip001'))
-        if self.m_biped is not None:
+        #self.m_biped_class = bipedSelect(rt.getnodeByName('Bip001'))
+        if self.m_biped_class is not None:
             self.CreditLayout()
             #바이페드가 여러게 생성되었을 경우 초기값을 돌려줌
-            self.m_biped = self.m_biped_list[0]
+            self.m_biped_class = self.m_biped_list[0]
         #self.setBaseSize(QtCore.QSize(195,350))
         self.m_bip_file_dir = os.path.join(rt.maxfilepath, self.m_bip_path_folder_name)
         self.show()
@@ -287,7 +321,7 @@ class BipedMainWindow(QtWidgets.QDialog):
             biped_class = bipedSelect(node)
             bipeds.append(biped_class)
         if len(bipeds) > 0:
-            self.m_biped = bipeds[0]
+            self.m_biped_class = bipeds[0]
             #self.log(u'기본 바이패드로 {}가 선택되었습니다.'.format(self.m_biped.m_bipName))
         return tuple(bipeds)
     def GetQPaletteData(self, qpalette):
@@ -321,9 +355,9 @@ class BipedMainWindow(QtWidgets.QDialog):
             layout.addLayout(pony2_layout)
         return 
     def AddBipedSelectButtons(self, layout, taregt_name = '', button_color = m_default_color, add_name = False, max_limit = 6, revers = False):
-        if not taregt_name in self.m_biped.m_bipNodes:
+        if not taregt_name in self.m_biped_class.m_bipNodes:
             return None
-        biped_tp = self.m_biped.m_bipNodes[taregt_name]
+        biped_tp = self.m_biped_class.m_bipNodes[taregt_name]
         rever_tp = biped_tp[::-1]
         useing_up = biped_tp
         if revers:
@@ -333,7 +367,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         for bip in useing_up:
             name = ''
             if add_name:
-                name = self.m_biped.GetPartName(bip)
+                name = self.m_biped_class.GetPartName(bip)
             self.CreditSelectButton(layout, taregt_name, biped_tp.index(bip), name, button_color)
     def CreditPhalanxLayout(self, parent_layout, limb_name, target_count = (0,0), button_color = m_default_color, revers = False):
         ''' parent_layout add button 
@@ -358,11 +392,11 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.m_select_tabWidget = QtWidgets.QTabWidget()
         tab_tayout = QtWidgets.QVBoxLayout(self.m_select_tabWidget)
         for bip in self.m_biped_list:
-            self.m_biped = bip
+            self.m_biped_class = bip
             new_tab = QtWidgets.QWidget()
             new_layout = self.SepBipSelectLayout()
             new_tab.setLayout(new_layout)
-            self.m_select_tabWidget.addTab(new_tab, self.m_biped.m_bipName)
+            self.m_select_tabWidget.addTab(new_tab, self.m_biped_class.m_bipName)
         self.m_select_tabWidget.currentChanged.connect(self.ChangeBipedSet)
         layout.addWidget(self.m_select_tabWidget)
     def SepBipSelectLayout(self):
@@ -380,7 +414,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         # 중단
         biped_body_layout = QtWidgets.QHBoxLayout()
         biped_r_arm_layout = QtWidgets.QVBoxLayout()
-        finger_count_tp = self.m_biped.GetFingerCount()
+        finger_count_tp = self.m_biped_class.GetFingerCount()
         biped_r_hand_layout = QtWidgets.QVBoxLayout()
         self.AddBipedSelectButtons(biped_r_hand_layout, self.m_bipName.rarm, self.m_right_color, add_name = True)
         biped_r_arm_layout.addLayout(biped_r_hand_layout)
@@ -412,7 +446,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         # 하단
         biped_leg_layout = QtWidgets.QHBoxLayout()
         biped_r_leg_layout = QtWidgets.QVBoxLayout()
-        toes_count_tp = self.m_biped.GetToesCount()
+        toes_count_tp = self.m_biped_class.GetToesCount()
         ## 발가락
         biped_r_foot_layout = QtWidgets.QVBoxLayout()
         self.AddBipedSelectButtons(biped_r_foot_layout, self.m_bipName.rleg, self.m_right_color, add_name = True)
@@ -442,11 +476,26 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.SetBipedSelectQComboBox(qcombobox)
         title_layout.addWidget(qcombobox)
         parent_layout.addLayout(title_layout)
+    # Key
+    def NextKeyFrame(self):
+        self.m_key_class.SetSliderTimeNextKeyFrame(self.m_biped_class.m_com)
+    def PreviousKeyFrame(self):
+        self.m_key_class.SetSliderTimePreviousKeyFrame(self.m_biped_class.m_com)
+    def AddKeyButton(self, layout, button_text, click_def, button_color = m_default_color):
+        qbutton = QtWidgets.QPushButton(button_text, default = False, autoDefault = False)
+        qbutton.clicked.connect(click_def)
+        qpalette = qbutton.palette()
+        qpalette.setColor(QtGui.QPalette.Button, button_color)
+        qbutton.setPalette(qpalette)
+        layout.addWidget(qbutton)
     def CreateKeyLayout(self, parent_layout):
         layout = QtWidgets.QHBoxLayout()
         add_key_qbutton = QtWidgets.QPushButton(self.m_add_key_button_name, default = False, autoDefault = False)
         add_key_qbutton.clicked.connect(self.AddNewKey)
         layout.addWidget(add_key_qbutton)
+        self.AddKeyButton(layout, '이전키', self.PreviousKeyFrame)
+        self.AddKeyButton(layout, '다음키', self.NextKeyFrame)
+        #
         parent_layout.addLayout(layout)
     def AddNewKey(self):
         self.m_key_class.SetKey(rt.selection)
@@ -470,14 +519,14 @@ class BipedMainWindow(QtWidgets.QDialog):
     def SaveBipFile(self):
         self.log(u'SaveBipFile in')
         file_name = rt.maxfilename[:-4]
-        bip_name = self.m_biped.m_com.name
+        bip_name = self.m_biped_class.m_com.name
         extension = self.m_bip_extension
         file_path = self.m_bip_file_dir
         if not os.path.isdir(file_path):
             os.mkdir(file_path)
         save_file_name = u'{file_path}{file_name}_{bip_name}{extension}'.format(file_path = file_path, file_name = file_name, bip_name = bip_name, extension = extension)
         self.log(save_file_name)
-        rt.biped.saveBipFile(self.m_biped.m_com.controller, save_file_name)
+        rt.biped.saveBipFile(self.m_biped_class.m_com.controller, save_file_name)
     def OpenBipDir(self):
         enable = rt.ShellLaunch(self.m_bip_file_dir, "")
         if not enable:
@@ -486,7 +535,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         #self.log(u'메인 레이아웃 생성한다.')
         self.m_layout_main = QtWidgets.QVBoxLayout()
         #self.SetBipTitleLayout(self.m_layout_main)
-        if not self.m_biped is None:
+        if not self.m_biped_class is None:
             self.CreditBipedSelectTab(self.m_layout_main)
         #키 관련 버튼
         self.CreateKeyLayout(self.m_layout_main)
@@ -501,11 +550,11 @@ class BipedMainWindow(QtWidgets.QDialog):
             qcombobox.addItem(bip.m_com.name)
         qcombobox.currentIndexChanged.connect(self.ChangeBipedSet)
     def ChangeBipedSet(self, index):
-        self.m_biped = self.m_biped_list[index]
+        self.m_biped_class = self.m_biped_list[index]
     def selectNode(self, limb_name = '', link_index = 0):
-        self.m_biped.select(limb_name, link_index)
+        self.m_biped_class.select(limb_name, link_index)
     def SelectAllBiped(self):
-        rt.select(self.m_biped.m_bipedAll_nodes)
+        rt.select(self.m_biped_class.m_bipedAll_nodes)
         rt.redrawViews()
     def TestPrint(self):
         print('test')
