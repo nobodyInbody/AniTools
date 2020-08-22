@@ -190,6 +190,8 @@ class GetKey():
     m_tcb_default_value_list = [25, 25, 25]
     m_tcb_linear_value_list = [25, 0, 25]
     m_tcb_smooth_value_list = [25,25,25]
+    m_rotation_name = u'Rotation'
+    m_rotation_tcb_name = u'tcb_rotation'
     def __init__(self, node = None):
         self.m_node = node
         self.m_currentFrame = rt.currentTime
@@ -207,18 +209,34 @@ class GetKey():
         pass
     def PasteKeys(self, nodes):
         pass
+    def SetKeyTcb(solf, ctrl, index, tcb_value_list):
+        if index == 0:
+            return False
+        key = rt.getKey(ctrl, index)
+        tension, continuity, bias = tcb_value_list
+        key.tension = tension
+        key.continuity = continuity
+        key.bias = bias
 class GetBipedKey(GetKey):
     def __init__(self):
         self.m_biped_type_name_class = BipedLimbName()
     def SetKey(self, nodes):
+        getNodeType = rt.classOf
+        isBipedType = self.m_biped_type_name_class.bip_class
+        this_time = rt.currentTime
+        biepdAddKey = rt.biped.addNewKey
+        boneAddKey = rt.addNewKey
         for node in nodes:
             ctrl = node.controller
-            if ctrl.rootNode == node:
-                rt.biped.addNewKey(ctrl.vertical.controller, rt.currentTime)
-                rt.biped.addNewKey(ctrl.horizontal.controller, rt.currentTime)
-                rt.biped.addNewKey(ctrl.turning.controller, rt.currentTime)
+            if str(getNodeType(node)) == isBipedType:
+                if ctrl.rootNode == node:
+                    biepdAddKey(ctrl.vertical.controller, this_time)
+                    biepdAddKey(ctrl.horizontal.controller, this_time)
+                    biepdAddKey(ctrl.turning.controller, this_time)
+                else:
+                    biepdAddKey(ctrl, this_time)
             else:
-                rt.biped.addNewKey(ctrl, rt.currentTime)
+                boneAddKey(ctrl, this_time)
     def SetSliderTimeNextKeyFrame(self, node):
         ctrl = node.controller
         current_time = rt.currentTime
@@ -271,10 +289,10 @@ class GetBipedKey(GetKey):
         self.SetIK(rt.biped.setSlidingKey)
     def SetIKFreeKey(self):
         self.SetIK(rt.biped.setFreeKey)
-    def SetKeyTcb(solf, ctrl, index, tcb_value_list):
+    def SetKeyTcb(solf, ctrl, getKeyType, index, tcb_value_list):
         if index == 0:
             return False
-        key = rt.biped.getKey(ctrl, index)
+        key = getKeyType(ctrl, index)
         tension, continuity, bias = tcb_value_list
         key.tension = tension
         key.continuity = continuity
@@ -282,21 +300,30 @@ class GetBipedKey(GetKey):
     def SetTcbValue(self, tcb_value_list):
         getKeyIndex =  rt.getkeyindex
         getNodeType = rt.classOf
+        bipedGetKey = rt.biped.getKey
+        boneGetKey = rt.getKey
         isBipedType = self.m_biped_type_name_class.bip_class
         this_time = rt.sliderTime
+        getCtrl = rt.getPropertyController
+        is_tcb_type = self.m_rotation_tcb_name
         for node in rt.selection:
             ctrl = node.controller
             if str(getNodeType(node)) == isBipedType:
                 if ctrl.rootNode == node:
                     index = getKeyIndex(ctrl.vertical.controller, this_time)
-                    self.SetKeyTcb(ctrl.vertical.controller, index, tcb_value_list)
+                    self.SetKeyTcb(ctrl.vertical.controller, bipedGetKey, index, tcb_value_list)
                     index = getKeyIndex(ctrl.horizontal.controller, this_time)
-                    self.SetKeyTcb(ctrl.horizontal.controller, index, tcb_value_list)
+                    self.SetKeyTcb(ctrl.horizontal.controller, bipedGetKey, index, tcb_value_list)
                     index = getKeyIndex(ctrl.turning.controller, this_time)
-                    self.SetKeyTcb(ctrl.turning.controller, index, tcb_value_list)
+                    self.SetKeyTcb(ctrl.turning.controller,bipedGetKey,index, tcb_value_list)
                 else:
                     index = getKeyIndex(ctrl, this_time)
-                    self.SetKeyTcb(ctrl, index, tcb_value_list)
+                    self.SetKeyTcb(ctrl, bipedGetKey, index, tcb_value_list)
+            else:
+                rot_ctrl = getCtrl(node.track, self.m_rotation_name)
+                if str(getNodeType(rot_ctrl)) == is_tcb_type:
+                    index = getKeyIndex(rot_ctrl, this_time)
+                    self.SetKeyTcb(rot_ctrl, boneGetKey, index, tcb_value_list)
 
 class animationRange():
     m_animSet_list= []
