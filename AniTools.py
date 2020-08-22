@@ -11,7 +11,8 @@ class AniToolsLog():
     #m_Text = u'1.12 #bip저장'
     #m_Text = u'1.13 #26 선택문제'
     #m_Text = u'1.14 #30 바이페드 전부 선택'
-    m_Text = u'1.15 #29 키 버튼'
+    #m_Text = u'1.15 #29 키 버튼'
+    m_Text = u'1.15 #4 tcb 키 버튼'
     def __init__(self):
         pass
     def Get(self):
@@ -186,6 +187,9 @@ class GetKey():
     m_rot_keys = []
     m_scl_keys = []
     m_obj_type_dic = {}
+    m_tcb_default_value_list = [25, 25, 25]
+    m_tcb_linear_value_list = [25, 0, 25]
+    m_tcb_smooth_value_list = [25,25,25]
     def __init__(self, node = None):
         self.m_node = node
         self.m_currentFrame = rt.currentTime
@@ -203,10 +207,9 @@ class GetKey():
         pass
     def PasteKeys(self, nodes):
         pass
-
 class GetBipedKey(GetKey):
     def __init__(self):
-        pass
+        self.m_biped_type_name_class = BipedLimbName()
     def SetKey(self, nodes):
         for node in nodes:
             ctrl = node.controller
@@ -252,6 +255,49 @@ class GetBipedKey(GetKey):
         else:
             key_list = [x.time for x in ctrl.controller.keys]
             rt.sliderTime = getPreviousTime(current_time, sorted(key_list)[::-1])
+    def SetIK(self, ik_type):
+        ''' set seletion nodes ik
+        ik_type = Plant, Sliding, Free
+        '''
+        setIK = ik_type
+        getNodeType = rt.classOf
+        isBipedType = self.m_biped_type_name_class.bip_class
+        for node in rt.selection:
+            if str(getNodeType(node)) == isBipedType:
+                setIK(node)
+    def SetIKPlantedKey(self):
+        self.SetIK(rt.biped.setPlantedKey)
+    def SetIKSlidingKey(self):
+        self.SetIK(rt.biped.setSlidingKey)
+    def SetIKFreeKey(self):
+        self.SetIK(rt.biped.setFreeKey)
+    def SetKeyTcb(solf, ctrl, index, tcb_value_list):
+        if index == 0:
+            return False
+        key = rt.biped.getKey(ctrl, index)
+        tension, continuity, bias = tcb_value_list
+        key.tension = tension
+        key.continuity = continuity
+        key.bias = bias
+    def SetTcbValue(self, tcb_value_list):
+        getKeyIndex =  rt.getkeyindex
+        getNodeType = rt.classOf
+        isBipedType = self.m_biped_type_name_class.bip_class
+        this_time = rt.sliderTime
+        for node in rt.selection:
+            ctrl = node.controller
+            if str(getNodeType(node)) == isBipedType:
+                if ctrl.rootNode == node:
+                    index = getKeyIndex(ctrl.vertical.controller, this_time)
+                    self.SetKeyTcb(ctrl.vertical.controller, index, tcb_value_list)
+                    index = getKeyIndex(ctrl.horizontal.controller, this_time)
+                    self.SetKeyTcb(ctrl.horizontal.controller, index, tcb_value_list)
+                    index = getKeyIndex(ctrl.turning.controller, this_time)
+                    self.SetKeyTcb(ctrl.turning.controller, index, tcb_value_list)
+                else:
+                    index = getKeyIndex(ctrl, this_time)
+                    self.SetKeyTcb(ctrl, index, tcb_value_list)
+
 class animationRange():
     m_animSet_list= []
     def __init__(sefl):
@@ -281,6 +327,13 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_select_tabWidget = QtWidgets.QTabWidget()
     #key
     m_add_key_button_name = u'Set Key'
+    m_next_key_button_name = u'다음키'
+    m_prev_key_button_name = u'이전키'
+    m_ik_planted_button_name = u'Plant'
+    m_ik_sliding_button_name = u'Sliding'
+    m_ik_free_button_name = u'Free'
+    m_tcb_Linear_min_button_name = u'TCB Linear'
+    m_tcb_tension_mid_button_name = u'TCB Smooth'
     #File
     m_bip_save_text_name = u'SaveBip'
     m_bip_path_folder_name = u'_BipFiles\\'
@@ -476,37 +529,55 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.SetBipedSelectQComboBox(qcombobox)
         title_layout.addWidget(qcombobox)
         parent_layout.addLayout(title_layout)
-    # Key
+    # Key def
     def NextKeyFrame(self):
         self.m_key_class.SetSliderTimeNextKeyFrame(self.m_biped_class.m_com)
     def PreviousKeyFrame(self):
         self.m_key_class.SetSliderTimePreviousKeyFrame(self.m_biped_class.m_com)
+    def AddNewKey(self):
+        self.m_key_class.SetKey(rt.selection)
+    # key layout
     def AddKeyButton(self, layout, button_text, click_def, button_color = m_default_color):
         qbutton = QtWidgets.QPushButton(button_text, default = False, autoDefault = False)
         qbutton.clicked.connect(click_def)
+        qbutton.setMinimumSize(self.m_button_w_setMinimumSize,self.m_button_h_setMinimumSize)
         qpalette = qbutton.palette()
         qpalette.setColor(QtGui.QPalette.Button, button_color)
         qbutton.setPalette(qpalette)
         layout.addWidget(qbutton)
     def CreateKeyLayout(self, parent_layout):
-        layout = QtWidgets.QHBoxLayout()
-        add_key_qbutton = QtWidgets.QPushButton(self.m_add_key_button_name, default = False, autoDefault = False)
-        add_key_qbutton.clicked.connect(self.AddNewKey)
-        layout.addWidget(add_key_qbutton)
-        self.AddKeyButton(layout, '이전키', self.PreviousKeyFrame)
-        self.AddKeyButton(layout, '다음키', self.NextKeyFrame)
+        main_layout = QtWidgets.QVBoxLayout()
+        key_layout = QtWidgets.QHBoxLayout()
+        self.AddKeyButton(key_layout, self.m_add_key_button_name, self.AddNewKey)
+        self.AddKeyButton(key_layout, self.m_prev_key_button_name, self.PreviousKeyFrame)
+        self.AddKeyButton(key_layout, self.m_next_key_button_name, self.NextKeyFrame)
+        main_layout.addLayout(key_layout)
+        # biped IK button
+        ik_layout = QtWidgets.QHBoxLayout()
+        self.AddKeyButton(ik_layout, self.m_ik_planted_button_name, self.SetIKPlantedKey)
+        self.AddKeyButton(ik_layout, self.m_ik_sliding_button_name, self.SetIKSlidingKey)
+        self.AddKeyButton(ik_layout, self.m_ik_free_button_name, self.SetIKFreeKey)
+        main_layout.addLayout(ik_layout)
+        # tcb button
+        tcb_layout = QtWidgets.QHBoxLayout()
+        self.AddKeyButton(tcb_layout, self.m_tcb_Linear_min_button_name, self.SetTcbLinear)
+        self.AddKeyButton(tcb_layout, self.m_tcb_tension_mid_button_name, self.SetTcbSmooth)
+        #self.AddKeyButton(ik_layout, self.m_ik_free_button_name, self.SetIKFreeKey)
+        main_layout.addLayout(tcb_layout)
         #
-        parent_layout.addLayout(layout)
-    def AddNewKey(self):
-        self.m_key_class.SetKey(rt.selection)
-    def CreateTCBLayout(self, parent_layout):
-        pass
-    def SetTCBPlantedKey(self, node):
-        pass
-    def SetTCBSlidingKey(self, node):
-        pass
-    def SetTCBSetFreeKey(self, node):
-        pass
+        parent_layout.addLayout(main_layout)
+    # key biped IK def
+    def SetIKPlantedKey(self):
+        self.m_key_class.SetIK(rt.biped.setPlantedKey)
+    def SetIKSlidingKey(self):
+        self.m_key_class.SetIK(rt.biped.setSlidingKey)
+    def SetIKFreeKey(self):
+        self.m_key_class.SetIK(rt.biped.setFreeKey)
+    # key tcb def
+    def SetTcbLinear(self):
+        self.m_key_class.SetTcbValue(self.m_key_class.m_tcb_linear_value_list)
+    def SetTcbSmooth(self):
+        self.m_key_class.SetTcbValue(self.m_key_class.m_tcb_smooth_value_list)
     def CreateBipFileLayout(self, parent_layout):
         files_layout = QtWidgets.QHBoxLayout()
         save_bip_file_button = QtWidgets.QPushButton(self.m_bip_save_text_name, default = False, autoDefault = False)
@@ -541,9 +612,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.CreateKeyLayout(self.m_layout_main)
         #Tcb조정
         self.CreateBipFileLayout(self.m_layout_main)
-        self.CreateTCBLayout(self.m_layout_main)
         self.setLayout(self.m_layout_main)
-        
     def SetBipedSelectQComboBox(self, qcombobox):
         #self.log(u'바이패드를 선택하는 메뉴를 추가한다.')
         for bip in self.m_biped_list:
