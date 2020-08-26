@@ -18,6 +18,7 @@ class AniToolsLog():
     def Get(self):
         return self.m_Text
 class BipedLimbName():
+    in_time = timeit.default_timer()
     bip_class = 'Biped_Object'
     larm = 'lArm'
     rarm = 'rArm'
@@ -51,7 +52,7 @@ class BipedLimbName():
     lHorseTwist = 'lHorseTwist'
     rHorseTwist = 'rHorseTwist'
     def __init__(self):
-        pass
+        print('BipedLimbName 클래스 실행 완료 시간 : {}'.format(str(timeit.default_timer() - self.in_time)))
 class bipedSelect():
     #rt = pymxs.runtime
     m_enable_log = False
@@ -99,10 +100,12 @@ class bipedSelect():
             print('node is None')
             return None
         #self.log(u'바이패드노드 정보의 생성 대상은 {}입니다.'.format(node.name))
+        in_time = timeit.default_timer()
         self.m_com = node
         self.m_bipedAll_nodes = []
         self.m_bipNodes = self.GetBipedBoneList()
         self.m_bipName = self.m_com.name
+        print('bipedSelect 클래스 실행 완료 시간 : {}'.format(str(timeit.default_timer() - in_time)))
         #self.log(u'바이패드 노드 정보 생성 완료')
     def log(self, text):
         if self.m_enable_log:
@@ -119,22 +122,22 @@ class bipedSelect():
         self.AddBipedNodeKeys(dict = nodes_dis, name_list = self.m_twistNames, maxLinks = twin_maxlinks)
         return nodes_dis
     def AddBipedNodeKeys(self, dict = {}, name_list = [], maxLinks = 0):
+        getNode = rt.biped.getNode
+        bipedAllNodeAdd = self.m_bipedAll_nodes.extend
         for name in name_list:
             key = str(name)
             node_list = []
             node = None
-            node = rt.biped.getNode(self.m_com, name , link=1)
+            node = getNode(self.m_com, name , link=1)
             if node is not None:
                 node_list.append(node)
                 for i in range(2,maxLinks):
-                    subNode = rt.biped.getNode(self.m_com, name , link=i)
+                    subNode = getNode(self.m_com, name , link=i)
                     if subNode is None:
                         break
                     node_list.append(subNode)
-                    #if subNode is not None:
-                    #    node_list.append(subNode)
             value = tuple(node_list)
-            self.m_bipedAll_nodes.extend(node_list)
+            bipedAllNodeAdd(node_list)
             dict[key] = value
     def GetChindNode(self, node):
         pass
@@ -289,7 +292,7 @@ class GetBipedKey(GetKey):
         self.SetIK(rt.biped.setSlidingKey)
     def SetIKFreeKey(self):
         self.SetIK(rt.biped.setFreeKey)
-    def SetKeyTcb(solf, ctrl, getKeyType, index, tcb_value_list):
+    def SetKeyTcb(self, ctrl, getKeyType, index, tcb_value_list):
         if index == 0:
             return False
         key = getKeyType(ctrl, index)
@@ -324,6 +327,8 @@ class GetBipedKey(GetKey):
                 if str(getNodeType(rot_ctrl)) == is_tcb_type:
                     index = getKeyIndex(rot_ctrl, this_time)
                     self.SetKeyTcb(rot_ctrl, boneGetKey, index, tcb_value_list)
+    def CopyPose(self):
+        pass
 
 class animationRange():
     m_animSet_list= []
@@ -368,7 +373,10 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_bip_open_button_text = u'Open Folder'
     m_bip_file_dir = u''
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
+        print('BipedMainWindow __init__')
+        in_time = timeit.default_timer()
         super(BipedMainWindow, self).__init__(parent)
+        print('super: BipedMainWindow클래스 실행 완료 시간 : {}'.format(str(timeit.default_timer() - in_time)))
         title_text = u'{} - {}'.format(self.m_title_text, self.m_file_log.Get())
         self.setWindowTitle(title_text)
         self.m_biped_list = self.GetBipedComs()
@@ -380,6 +388,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         #self.setBaseSize(QtCore.QSize(195,350))
         self.m_bip_file_dir = os.path.join(rt.maxfilepath, self.m_bip_path_folder_name)
         self.show()
+        print('BipedMainWindow 클래스 실행 완료 시간 : {}'.format(str(timeit.default_timer() - in_time)))
     def log(self, text):
         if self.m_enable_log:
             print(text)
@@ -387,14 +396,17 @@ class BipedMainWindow(QtWidgets.QDialog):
         biped_com_list = []
         bipeds = []
         #self.log(u'오브젝트 검색 시작')
-        start_time = timeit.default_timer()
-        for node in rt.objects:
-            if str(rt.classOf(node)) == self.m_bipName.bip_class:
-                com = rt.biped.getNode(node, rt.Name(self.m_bipName.com_v), link = 1)
-                if not com in biped_com_list:
-                    biped_com_list.append(com)
+        in_time = timeit.default_timer()
+        classOf = rt.classOf
+        bip_class_str = 'Biped_Object'
+        getNode = rt.biped.getNode
+        name = rt.Name('vertical')
+        addList = biped_com_list.append
+        print(str(len(rt.objects)))
+        biped_com_list = [node.controller.rootNode for node in rt.objects if node.name.endswith('Footsteps')]
         end_time = timeit.default_timer()
-        #self.log(u'검사종료 : {}'.format(end_time - start_time))
+        print('GetBipedComs 검사종료 시간 : {}'.format(str(timeit.default_timer() - in_time)))
+        #self.log(u'검사종료 : {}'.format(end_time - in_time))
         #self.log(u'씬의 바이패드는 {}개가 있습니다.'.format(len(biped_com_list)))
         for node in biped_com_list:
             #self.log(node.name)
@@ -403,6 +415,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         if len(bipeds) > 0:
             self.m_biped_class = bipeds[0]
             #self.log(u'기본 바이패드로 {}가 선택되었습니다.'.format(self.m_biped.m_bipName))
+        print('GetBipedComs 클래스 실행 완료 시간 : {}'.format(str(timeit.default_timer() - in_time)))
         return tuple(bipeds)
     def GetQPaletteData(self, qpalette):
         alternateBase_qbrush = qpalette.alternateBase()
