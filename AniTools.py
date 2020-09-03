@@ -353,8 +353,8 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_mid_color = QtGui.QColor(8, 110, 134)
     m_lift_color = QtGui.QColor(28, 28, 177)
     m_com_color = QtGui.QColor(135, 6, 6)
-    m_button_w_setMinimumSize = 5
-    m_button_h_setMinimumSize = 14
+    m_finger_button_min_size = (12, 8) #width, higth
+    m_button_min_size = (60, 15) #width, higth
     m_layout_main = None
     m_select_tabWidget = QtWidgets.QTabWidget()
     #key
@@ -422,12 +422,16 @@ class BipedMainWindow(QtWidgets.QDialog):
         base_qbrush = qpalette.base()
         current_colorgroup = qpalette.currentColorGroup()
         #print(current_colorgroup)
-    def CreditSelectButton(self, layout , limb_name ='', index = 0, button_text = '', button_color = m_default_color):
+    def SetButtonSize(self, button, min_size = m_button_min_size):
+        w_size, h_size = min_size
+        button.setMinimumSize(w_size, h_size)
+    def CreditSelectButton(self, layout , limb_name ='', index = 0, button_text = '', button_color = m_default_color, min_size = m_button_min_size):
+        w_size, h_size = min_size
         button = QtWidgets.QPushButton(button_text, default = False, autoDefault = False)
         #self.log(limb_name)
         #self.log(str(index))
         button.clicked.connect(lambda : self.selectNode(limb_name=limb_name,link_index = index))
-        button.setMinimumSize(self.m_button_w_setMinimumSize,self.m_button_h_setMinimumSize)
+        button.setMinimumSize(w_size, h_size)
         #button.setBaseSize(QtCore.QSize(50, 20))
         qpalette = button.palette()
         qpalette.setColor(QtGui.QPalette.Button, button_color)
@@ -473,7 +477,7 @@ class BipedMainWindow(QtWidgets.QDialog):
             if revers:
                 target_index = target_index + (link_count * (toes_count - 1))
             for link_index in range(0, toes_count ):
-                self.CreditSelectButton(link_layout, limb_name, (target_index), '', button_color)
+                self.CreditSelectButton(link_layout, limb_name, (target_index), '', button_color, min_size = self.m_finger_button_min_size)
                 if revers:
                     target_index = target_index - link_count
                 else:
@@ -577,10 +581,11 @@ class BipedMainWindow(QtWidgets.QDialog):
     def AddNewKey(self):
         self.m_key_class.SetKey(rt.selection)
     # key layout
-    def AddKeyButton(self, layout, button_text, click_def, button_color = m_default_color):
+    def AddKeyButton(self, layout, button_text, click_def, button_color = m_default_color, min_size = m_button_min_size):
+        w_size, h_size = min_size
         qbutton = QtWidgets.QPushButton(button_text, default = False, autoDefault = False)
         qbutton.clicked.connect(click_def)
-        qbutton.setMinimumSize(self.m_button_w_setMinimumSize,self.m_button_h_setMinimumSize)
+        qbutton.setMinimumSize(w_size, h_size)
         qpalette = qbutton.palette()
         qpalette.setColor(QtGui.QPalette.Button, button_color)
         qbutton.setPalette(qpalette)
