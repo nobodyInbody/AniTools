@@ -143,12 +143,16 @@ class bipedSelect():
         pass
     def select(self, name = '', index = 0):
         node = self.GetNode(name, index)
+        modifiers = QtWidgets.QApplication.keyboardModifiers()
         if node is not None and rt.isValidNode(node):
-            rt.select(node)
+            if modifiers == QtCore.Qt.ControlModifier:
+                rt.selectMore(node)
+            elif modifiers == QtCore.Qt.AltModifier:
+                rt.deselect(node)
+            else:
+                rt.select(node)
         #rt.gw.updateScreen()
         rt.redrawViews()
-    def selectMode(self, biped_node, sub_node):
-        pass
     def GetNode(self, name = '', index = 0):
         node = None
         if name not in self.m_bipNodes:
@@ -385,7 +389,6 @@ class BipedMainWindow(QtWidgets.QDialog):
             self.CreditLayout()
             #바이페드가 여러게 생성되었을 경우 초기값을 돌려줌
             self.m_biped_class = self.m_biped_list[0]
-        #self.setBaseSize(QtCore.QSize(195,350))
         self.m_bip_file_dir = os.path.join(rt.maxfilepath, self.m_bip_path_folder_name)
         self.show()
         print('BipedMainWindow 클래스 실행 완료 시간 : {}'.format(str(timeit.default_timer() - in_time)))
@@ -668,7 +671,13 @@ class BipedMainWindow(QtWidgets.QDialog):
     def selectNode(self, limb_name = '', link_index = 0):
         self.m_biped_class.select(limb_name, link_index)
     def SelectAllBiped(self):
-        rt.select(self.m_biped_class.m_bipedAll_nodes)
+        modifiers = QtWidgets.QApplication.keyboardModifiers()
+        if modifiers == QtCore.Qt.ControlModifier:
+            rt.selectMore(self.m_biped_class.m_bipedAll_nodes)
+        elif modifiers == QtCore.Qt.AltModifier:
+            rt.deselect(self.m_biped_class.m_bipedAll_nodes)
+        else:
+            rt.select(self.m_biped_class.m_bipedAll_nodes)
         rt.redrawViews()
     def TestPrint(self):
         print('test')
