@@ -12,7 +12,8 @@ class AniToolsLog():
     #m_Text = u'1.13 #26 선택문제'
     #m_Text = u'1.14 #30 바이페드 전부 선택'
     #m_Text = u'1.15 #29 키 버튼'
-    m_Text = u'1.15 #4 tcb 키 버튼'
+    #m_Text = u'1.15 #4 tcb 키 버튼'
+    m_Text = u'1.16 #31 선택기능 강화'
     def __init__(self):
         pass
     def Get(self):
@@ -139,8 +140,24 @@ class bipedSelect():
             value = tuple(node_list)
             bipedAllNodeAdd(node_list)
             dict[key] = value
-    def GetChindNode(self, node):
-        pass
+    def GetRootParentNode(self, node):
+        isNotParent = True
+        if node == None:
+            isNotParent = False
+        while isNotParent:
+            #print(node.name)
+            pnode = node.parent 
+            if pnode == None:
+                isNotParent = False
+            else:
+                node = pnode
+        return node
+    def GetChildernNodes(self, node):
+        list = [node]
+        for c_node in node.Children:
+            list.append(c_node)
+            list = list + self.GetChildernNodes(c_node)
+        return list
     def select(self, name = '', index = 0):
         node = self.GetNode(name, index)
         modifiers = QtWidgets.QApplication.keyboardModifiers()
@@ -187,6 +204,13 @@ class bipedSelect():
         ''' return (rfinger_count, link_count) '''
         result = self.GetPhalanxCount('Finger','rfingers')
         return result
+    def GetAllBipedAndBone(self):
+        if self.m_com == None:
+            return []
+        # 바이패드까리 링크걸렸을때 다른것 까지 선택되서 com밑에까만 선택되게 수정
+        #root_node = self.GetRootParentNode(self.m_com)
+        all_bipeds_and_bones = self.GetChildernNodes(self.m_com)
+        return all_bipeds_and_bones
 class GetKey():
     m_node = None
     m_currentFrame = 0
@@ -350,7 +374,9 @@ class BipedMainWindow(QtWidgets.QDialog):
     # Biped Select
     m_biped_class = None
     m_biped_list = ()
-    m_select_all_biped_text = 'All Biped'
+    m_select_all_biped_text = 'Biped'
+    m_select_all_bipedsAndBone_text = 'Children'
+    m_select_all_objects_text = 'Scenes'
     m_bip_name_label = u'대상 :'
     m_default_color = QtGui.QColor(100,100,100)
     m_right_color = QtGui.QColor(6, 134, 6)
@@ -503,9 +529,15 @@ class BipedMainWindow(QtWidgets.QDialog):
         layout_bipedSelect = QtWidgets.QVBoxLayout()
         #최상단
         top_layout = QtWidgets.QHBoxLayout()
+        select_all_objects_button = QtWidgets.QPushButton(self.m_select_all_objects_text, default = False, autoDefault = False)
+        select_all_objects_button.clicked.connect(self.SelectAllSceneObjects)
+        top_layout.addWidget(select_all_objects_button)
         select_all_biped_button = QtWidgets.QPushButton(self.m_select_all_biped_text, default = False, autoDefault = False)
         select_all_biped_button.clicked.connect(self.SelectAllBiped)
         top_layout.addWidget(select_all_biped_button)
+        select_all_bipedsAndBones_button = QtWidgets.QPushButton(self.m_select_all_bipedsAndBone_text, default = False, autoDefault = False)
+        select_all_bipedsAndBones_button.clicked.connect(self.SelectAllBonesAndBipeds)
+        top_layout.addWidget(select_all_bipedsAndBones_button)
         layout_bipedSelect.addLayout(top_layout)
         # 상단
         biped_head_layout = QtWidgets.QHBoxLayout()
@@ -670,15 +702,21 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.m_biped_class = self.m_biped_list[index]
     def selectNode(self, limb_name = '', link_index = 0):
         self.m_biped_class.select(limb_name, link_index)
-    def SelectAllBiped(self):
+    def selectMode(self, target_node):
         modifiers = QtWidgets.QApplication.keyboardModifiers()
         if modifiers == QtCore.Qt.ControlModifier:
-            rt.selectMore(self.m_biped_class.m_bipedAll_nodes)
+            rt.selectMore(target_node)
         elif modifiers == QtCore.Qt.AltModifier:
-            rt.deselect(self.m_biped_class.m_bipedAll_nodes)
+            rt.deselect(target_node)
         else:
-            rt.select(self.m_biped_class.m_bipedAll_nodes)
+            rt.select(target_node)
         rt.redrawViews()
+    def SelectAllBiped(self):
+        self.selectMode(self.m_biped_class.m_bipedAll_nodes)
+    def SelectAllBonesAndBipeds(self):
+        self.selectMode(self.m_biped_class.GetAllBipedAndBone())
+    def SelectAllSceneObjects(self):
+        rt.select(rt.objects)
     def TestPrint(self):
         print('test')
     def CreateWindows(self):
