@@ -496,6 +496,8 @@ class BipedMainWindow(QtWidgets.QDialog):
             if add_name:
                 name = self.m_biped_class.GetPartName(bip)
             self.CreditSelectButton(layout, taregt_name, biped_tp.index(bip), name, button_color)
+        if len(useing_up) < 1:
+            return False
         return True
     def CreditPhalanxLayout(self, parent_layout, limb_name, target_count = (0,0), button_color = m_default_color, revers = False):
         ''' parent_layout add button 
