@@ -13,7 +13,8 @@ class AniToolsLog():
     #m_Text = u'1.14 #30 바이페드 전부 선택'
     #m_Text = u'1.15 #29 키 버튼'
     #m_Text = u'1.15 #4 tcb 키 버튼'
-    m_Text = u'1.16 #31 선택기능 강화'
+    #m_Text = u'1.16 #31 선택기능 강화'
+    m_Text = u'1.17 레아아웃 개선'
     def __init__(self):
         pass
     def Get(self):
@@ -541,6 +542,7 @@ class BipedMainWindow(QtWidgets.QDialog):
     def SepBipSelectLayout(self):
         layout_bipedSelect = QtWidgets.QVBoxLayout()
         #최상단
+        top_groupbox = QtWidgets.QGroupBox()
         top_layout = QtWidgets.QHBoxLayout()
         select_all_objects_button = QtWidgets.QPushButton(self.m_select_all_objects_text, default = False, autoDefault = False)
         select_all_objects_button.clicked.connect(self.SelectAllSceneObjects)
@@ -551,12 +553,18 @@ class BipedMainWindow(QtWidgets.QDialog):
         select_all_bipedsAndBones_button = QtWidgets.QPushButton(self.m_select_all_bipedsAndBone_text, default = False, autoDefault = False)
         select_all_bipedsAndBones_button.clicked.connect(self.SelectAllBonesAndBipeds)
         top_layout.addWidget(select_all_bipedsAndBones_button)
-        layout_bipedSelect.addLayout(top_layout)
+        #layout_bipedSelect.addLayout(top_layout)
+        top_groupbox.setLayout(top_layout)
+        layout_bipedSelect.addWidget(top_groupbox)
         # 상단
+        head_groupbox = QtWidgets.QGroupBox()
         biped_head_layout = QtWidgets.QHBoxLayout()
         self.AddHeadButton(biped_head_layout)
-        layout_bipedSelect.addLayout(biped_head_layout)
+        #layout_bipedSelect.addLayout(biped_head_layout)
+        head_groupbox.setLayout(biped_head_layout)
+        layout_bipedSelect.addWidget(head_groupbox)
         # 중단
+        body_groupbox = QtWidgets.QGroupBox()
         biped_body_layout = QtWidgets.QHBoxLayout()
         biped_r_arm_layout = QtWidgets.QVBoxLayout()
         finger_count_tp = self.m_biped_class.GetFingerCount()
@@ -572,8 +580,11 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.AddBipedSelectButtons(biped_l_hand_layout, self.m_bipName.larm, self.m_lift_color, add_name = True)
         self.CreditPhalanxLayout(biped_l_hand_layout,self.m_bipName.lfingers, finger_count_tp, self.m_lift_color)
         biped_body_layout.addLayout(biped_l_hand_layout)
-        layout_bipedSelect.addLayout(biped_body_layout)
+        #layout_bipedSelect.addLayout(biped_body_layout)
+        body_groupbox.setLayout(biped_body_layout)
+        layout_bipedSelect.addWidget(body_groupbox)
         # 중심
+        com_groupbox = QtWidgets.QGroupBox()
         biped_mid_layout = QtWidgets.QVBoxLayout()
         biped_com_layout = QtWidgets.QHBoxLayout()
         #self.AddBipedSelectButtons(biped_com_layout, 'vertical', self.m_mid_color, add_name = True)
@@ -587,8 +598,11 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.AddBipedSelectButtons(biped_porp_layout, self.m_bipName.prop2, self.m_mid_color, add_name = True)
         self.AddBipedSelectButtons(biped_porp_layout, self.m_bipName.prop3, self.m_mid_color, add_name = True)
         biped_mid_layout.addLayout(biped_porp_layout)
-        layout_bipedSelect.addLayout(biped_mid_layout)
+        #layout_bipedSelect.addLayout(biped_mid_layout)
+        com_groupbox.setLayout(biped_mid_layout)
+        layout_bipedSelect.addWidget(com_groupbox)
         # 하단
+        legs_groupbox = QtWidgets.QGroupBox()
         biped_leg_layout = QtWidgets.QHBoxLayout()
         biped_r_leg_layout = QtWidgets.QVBoxLayout()
         toes_count_tp = self.m_biped_class.GetToesCount()
@@ -608,7 +622,9 @@ class BipedMainWindow(QtWidgets.QDialog):
         biped_l_leg_layout.addLayout(biped_l_foot_layout)
         self.CreditPhalanxLayout(biped_l_leg_layout, self.m_bipName.ltoes, toes_count_tp, self.m_lift_color, revers = True)
         biped_leg_layout.addLayout(biped_l_leg_layout)
-        layout_bipedSelect.addLayout(biped_leg_layout)
+        #layout_bipedSelect.addLayout(biped_leg_layout)
+        legs_groupbox.setLayout(biped_leg_layout)
+        layout_bipedSelect.addWidget(legs_groupbox)
         #
         #parent_layout.addLayout(layout_bipedSelect)
         return layout_bipedSelect
