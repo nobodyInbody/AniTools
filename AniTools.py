@@ -15,7 +15,8 @@ class AniToolsLog():
     #m_Text = u'1.15 #4 tcb 키 버튼'
     #m_Text = u'1.16 #31 선택기능 강화'
     #m_Text = u'1.17 레아아웃 개선'
-    m_Text = u'1.18 없을때 리셋'
+    #m_Text = u'1.18 없을때 리셋'
+    m_Text = u'1.19 풋스탭키 오류'
     def __init__(self):
         pass
     def Get(self):
@@ -262,6 +263,8 @@ class GetBipedKey(GetKey):
         biepdAddKey = rt.biped.addNewKey
         boneAddKey = rt.addNewKey
         for node in nodes:
+            if node.name.endswith('Footsteps'):
+                continue
             ctrl = node.controller
             if str(getNodeType(node)) == isBipedType:
                 if ctrl.rootNode == node:
