@@ -14,7 +14,8 @@ class AniToolsLog():
     #m_Text = u'1.15 #29 키 버튼'
     #m_Text = u'1.15 #4 tcb 키 버튼'
     #m_Text = u'1.16 #31 선택기능 강화'
-    m_Text = u'1.17 레아아웃 개선'
+    #m_Text = u'1.17 레아아웃 개선'
+    m_Text = u'1.18 없을때 리셋'
     def __init__(self):
         pass
     def Get(self):
@@ -162,16 +163,17 @@ class bipedSelect():
         return list
     def select(self, name = '', index = 0):
         node = self.GetNode(name, index)
+        result = rt.IsValidNode(node)
         modifiers = QtWidgets.QApplication.keyboardModifiers()
-        if node is not None and rt.isValidNode(node):
+        if node is not None and result:
             if modifiers == QtCore.Qt.ControlModifier:
                 rt.selectMore(node)
             elif modifiers == QtCore.Qt.AltModifier:
                 rt.deselect(node)
             else:
                 rt.select(node)
-        #rt.gw.updateScreen()
         rt.redrawViews()
+        return result
     def GetNode(self, name = '', index = 0):
         node = None
         if name not in self.m_bipNodes:
@@ -272,8 +274,8 @@ class GetBipedKey(GetKey):
                 boneAddKey(ctrl, this_time)
         rt.redrawViews()
     def SetSliderTimeNextKeyFrame(self, node):
-        ctrl = node.controller
         current_time = rt.currentTime
+        ctrl = node.controller
         def getNextTime(current_time, key_list):
             getKey = current_time
             for key in key_list:
@@ -317,6 +319,8 @@ class GetBipedKey(GetKey):
         getNodeType = rt.classOf
         isBipedType = self.m_biped_type_name_class.bip_class
         for node in rt.selection:
+            if node.name.endswith('Footsteps'):
+                continue
             if str(getNodeType(node)) == isBipedType:
                 setIK(node)
         rt.redrawViews()
@@ -348,6 +352,8 @@ class GetBipedKey(GetKey):
         getCtrl = rt.getPropertyController
         is_tcb_type = self.m_rotation_tcb_name
         for node in rt.selection:
+            if node.name.endswith('Footsteps'):
+                continue
             ctrl = node.controller
             if str(getNodeType(node)) == isBipedType:
                 if ctrl.rootNode == node:
@@ -639,9 +645,15 @@ class BipedMainWindow(QtWidgets.QDialog):
         parent_layout.addLayout(title_layout)
     # Key def
     def NextKeyFrame(self):
-        self.m_key_class.SetSliderTimeNextKeyFrame(self.m_biped_class.m_com)
+        if rt.IsValidNode(self.m_biped_class.m_com):
+            self.m_key_class.SetSliderTimeNextKeyFrame(self.m_biped_class.m_com)
+        else:
+            self.ReStart()
     def PreviousKeyFrame(self):
-        self.m_key_class.SetSliderTimePreviousKeyFrame(self.m_biped_class.m_com)
+        if rt.IsValidNode(self.m_biped_class.m_com):
+            self.m_key_class.SetSliderTimePreviousKeyFrame(self.m_biped_class.m_com)
+        else:
+            self.ReStart()
     def AddNewKey(self):
         self.m_key_class.SetKey(rt.selection)
     # key layout
@@ -698,6 +710,8 @@ class BipedMainWindow(QtWidgets.QDialog):
         parent_layout.addLayout(files_layout)
     def SaveBipFile(self):
         self.log(u'SaveBipFile in')
+        if not rt.IsValidNode(self.m_biped_class.m_com):
+            return self.ReStart()
         file_name = rt.maxfilename[:-4]
         bip_name = self.m_biped_class.m_com.name
         extension = self.m_bip_extension
@@ -730,8 +744,12 @@ class BipedMainWindow(QtWidgets.QDialog):
     def ChangeBipedSet(self, index):
         self.m_biped_class = self.m_biped_list[index]
     def selectNode(self, limb_name = '', link_index = 0):
-        self.m_biped_class.select(limb_name, link_index)
+        isValidNode = self.m_biped_class.select(limb_name, link_index)
+        if not isValidNode:
+            self.ReStart()
     def selectMode(self, target_node):
+        if not rt.IsValidNode(self.m_biped_class.m_com):
+            return self.ReStart()
         modifiers = QtWidgets.QApplication.keyboardModifiers()
         if modifiers == QtCore.Qt.ControlModifier:
             rt.selectMore(target_node)
@@ -750,6 +768,14 @@ class BipedMainWindow(QtWidgets.QDialog):
         print('test')
     def CreateWindows(self):
         pass
+    def IsValidNode(self, node):
+        result = rt.IsValidNode(node)
+        if not result:
+            self.ReStart()
+        return result
+    def ReStart(self):
+        self.close()
+        BipedMainWindow()
 
 class_out_time = timeit.default_timer()
 #print('클래스 읽기 완료시간 : {}'.format(str(class_out_time - in_file_time)))
