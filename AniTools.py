@@ -725,7 +725,8 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.log(save_file_name)
         rt.biped.saveBipFile(self.m_biped_class.m_com.controller, save_file_name)
     def OpenBipDir(self):
-        enable = rt.ShellLaunch(self.m_bip_file_dir, "")
+        #enable = rt.ShellLaunch(self.m_bip_file_dir, "")
+        enable = rt.ShellLaunch(rt.maxfilepath, "")
         if not enable:
             pass
     def CreditLayout(self):
