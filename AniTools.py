@@ -16,7 +16,8 @@ class AniToolsLog():
     #m_Text = u'1.16 #31 선택기능 강화'
     #m_Text = u'1.17 레아아웃 개선'
     #m_Text = u'1.18 없을때 리셋'
-    m_Text = u'1.19 풋스탭키 오류'
+    # m_Text = u'1.19 풋스탭키 오류'
+    m_Text = u'1.20 네임선택리스트 추가 #40'
     def __init__(self):
         pass
     def Get(self):
@@ -431,9 +432,9 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.setWindowTitle(title_text)
         self.m_biped_list = self.GetBipedComs()
         #self.m_biped_class = bipedSelect(rt.getnodeByName('Bip001'))
-        if self.m_biped_class is not None:
-            self.CreditLayout()
+        self.CreditLayout()
             #바이페드가 여러게 생성되었을 경우 초기값을 돌려줌
+        if self.m_biped_class is not None:
             self.m_biped_class = self.m_biped_list[0]
         self.m_bip_file_dir = os.path.join(rt.maxfilepath, self.m_bip_path_folder_name)
         self.show()
@@ -739,6 +740,8 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.CreateKeyLayout(self.m_layout_main)
         #Tcb조정
         self.CreateBipFileLayout(self.m_layout_main)
+        #SeletSet
+        self.SelectSetLayout(self.m_layout_main)
         self.setLayout(self.m_layout_main)
     def SetBipedSelectQComboBox(self, qcombobox):
         #self.log(u'바이패드를 선택하는 메뉴를 추가한다.')
@@ -768,6 +771,25 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.selectMode(self.m_biped_class.GetAllBipedAndBone())
     def SelectAllSceneObjects(self):
         rt.select(rt.objects)
+    def SelectSetLayout(self, main_layout):
+        name_set_layout = QtWidgets.QHBoxLayout()
+        self.select_set_list_qcombobox = QtWidgets.QComboBox()
+        self.select_button = QtWidgets.QPushButton(u'선택', default = False, autoDefault = False)
+        self.select_button.clicked.connect(self.SelectNameSet)
+        select_set = rt.selectionSets
+        menu_item_list = []
+        for set in select_set:
+            # if set.name.startswith(u'sel'):
+            self.select_set_list_qcombobox.addItem(set.name)
+        #self.select_set_list_qcombobox.clicked.connect(self.SelectNameSet)
+        name_set_layout.addWidget(self.select_set_list_qcombobox)
+        name_set_layout.addWidget(self.select_button)
+        main_layout.addLayout(name_set_layout)
+    def SelectNameSet(self):
+        name = self.select_set_list_qcombobox.currentText()
+        print(name)
+        set_tiem = rt.selectionSets[name]
+        rt.select(set_tiem)
     def TestPrint(self):
         print('test')
     def CreateWindows(self):
