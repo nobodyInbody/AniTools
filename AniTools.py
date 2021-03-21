@@ -714,6 +714,8 @@ class BipedMainWindow(QtWidgets.QDialog):
         parent_layout.addLayout(files_layout)
     def SaveBipFile(self):
         self.log(u'SaveBipFile in')
+        if self.m_biped_class is None:
+            return False
         if not rt.IsValidNode(self.m_biped_class.m_com):
             return self.ReStart()
         file_name = rt.maxfilename[:-4]
