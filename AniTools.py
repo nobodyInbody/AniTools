@@ -17,7 +17,8 @@ class AniToolsLog():
     #m_Text = u'1.17 레아아웃 개선'
     #m_Text = u'1.18 없을때 리셋'
     # m_Text = u'1.19 풋스탭키 오류'
-    m_Text = u'1.20 네임선택리스트 추가 #40'
+    # m_Text = u'1.20 네임선택리스트 추가 #40'
+    m_Text = u'1.21 고정 폰트 칼라 #40' #준년님 같이 하이트 칼라를 사용할때 폰트가 안보이는 문제가 있음.
     def __init__(self):
         pass
     def Get(self):
@@ -404,6 +405,7 @@ class BipedMainWindow(QtWidgets.QDialog):
     m_mid_color = QtGui.QColor(8, 110, 134)
     m_lift_color = QtGui.QColor(28, 28, 177)
     m_com_color = QtGui.QColor(135, 6, 6)
+    m_button_text_color = QtGui.QColor(255,255,255)
     m_finger_button_min_size = (12, 8) #width, higth
     m_button_min_size = (60, 15) #width, higth
     m_layout_main = None
@@ -485,6 +487,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         #button.setBaseSize(QtCore.QSize(50, 20))
         qpalette = button.palette()
         qpalette.setColor(QtGui.QPalette.Button, button_color)
+        qpalette.setColor(QtGui.QPalette.ButtonText, QtGui.QColor(255, 255, 255))
         button.setPalette(qpalette)
         layout.addWidget(button)
     def AddHeadButton(self, layout):
@@ -667,7 +670,8 @@ class BipedMainWindow(QtWidgets.QDialog):
         qbutton.clicked.connect(click_def)
         qbutton.setMinimumSize(w_size, h_size)
         qpalette = qbutton.palette()
-        qpalette.setColor(QtGui.QPalette.Button, button_color)
+        qpalette.setColor(QtGui.QPalette.Button, button_color) 
+        qpalette.setColor(QtGui.QPalette.ButtonText, self.m_button_text_color)
         qbutton.setPalette(qpalette)
         layout.addWidget(qbutton)
     def CreateKeyLayout(self, parent_layout):
@@ -714,8 +718,6 @@ class BipedMainWindow(QtWidgets.QDialog):
         parent_layout.addLayout(files_layout)
     def SaveBipFile(self):
         self.log(u'SaveBipFile in')
-        if self.m_biped_class is None:
-            return False
         if not rt.IsValidNode(self.m_biped_class.m_com):
             return self.ReStart()
         file_name = rt.maxfilename[:-4]
