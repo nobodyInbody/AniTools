@@ -564,6 +564,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.m_biped_list = self.GetBipedComs()
         #self.m_biped_class = bipedSelect(rt.getnodeByName('Bip001'))
         self.CreditLayout()
+        self.ConnectWidget()
             #바이페드가 여러게 생성되었을 경우 초기값을 돌려줌
         if self.m_biped_class is not None:
             self.m_biped_class = self.m_biped_list[0]
@@ -908,21 +909,33 @@ class BipedMainWindow(QtWidgets.QDialog):
     def SelectSetLayout(self, main_layout):
         name_set_layout = QtWidgets.QHBoxLayout()
         self.select_set_list_qcombobox = QtWidgets.QComboBox()
+        self.select_set_list_qcombobox.setEditable(True)
+        #self.select_set_list_qcombobox.completer.connect(self.AddNameSet)
         self.select_button = QtWidgets.QPushButton(u'선택', default = False, autoDefault = False)
-        self.select_button.clicked.connect(self.SelectNameSet)
         self.selectSetAdd_button = QtWidgets.QPushButton(u'추가', default = False, autoDefault = False)
-        self.selectSetAdd_button.clicked.connect(lambda : self.AddNameSetObj(self.select_set_list_qcombobox.currentText(), rt.selection))
+        self.selectSetDelectNode_button = QtWidgets.QPushButton(u'제거', default = False, autoDefault = False)
         self.UpdateNameSet()
         #self.select_set_list_qcombobox.clicked.connect(self.SelectNameSet)
         name_set_layout.addWidget(self.select_set_list_qcombobox)
         name_set_layout.addWidget(self.select_button)
         name_set_layout.addWidget(self.selectSetAdd_button)
+        name_set_layout.addWidget(self.selectSetDelectNode_button)
         main_layout.addLayout(name_set_layout)
+    def IsSelectSetNewName(self, setName):
+        isNew = True
+        for i in range(1,rt.getNumNamedSelSets() + 1):
+            name = rt.getNamedSelSetName(i)
+            if name == setName:
+                isNew = False
+        return isNew
     def SelectNameSet(self):
         name = self.select_set_list_qcombobox.currentText()
-        print(name)
-        set_tiem = rt.selectionSets[name]
-        rt.select(set_tiem)
+        #print(name)
+        rt.clearSelection()
+        if not self.IsSelectSetNewName(name):
+            set_tiem = rt.selectionSets[name]
+            rt.select(set_tiem)
+        rt.redrawViews()
     def UpdateNameSet(self):
         tab = self.m_select_tabWidget
         index = tab.currentIndex()
@@ -931,14 +944,35 @@ class BipedMainWindow(QtWidgets.QDialog):
         qcombbax.clear()
         select_set = rt.selectionSets
         for set in select_set:
-            targetName = set.name.lower()
+            setName = set.name
+            targetName = setName.lower()
             if targetName.startswith(name.lower()):
-                qcombbax.addItem(set.name)
-    def AddNameSetObj(self, setName, nodes):
+                qcombbax.addItem(setName)
+    def AddNameSet(self):
+        setName = self.select_set_list_qcombobox.currentText()
+        nodes = rt.getCurrentSelection()
+        if len(nodes) == 0 :
+            return QtWidgets.QMessageBox.about(self, u"실패", u"추가될 오브젝트를 선택해주세요.")
+        tab = self.m_select_tabWidget
+        tabName = tab.tabText(tab.currentIndex())
         selectSet = rt.selectionSets
-        rt.select(nodes)
-        rt.selectmore(selectSet[setName])
-        selectSet[setName] = rt.selection
+        isNew = self.IsSelectSetNewName(tabName)
+        if isNew:
+            if setName.startswith(tabName):
+                selectSet[setName] = nodes
+            else:
+                setName = tabName + "_" + setName
+                selectSet[setName] = nodes
+        else:
+            rt.selectmore(selectSet[setName])
+            selectSet[setName] = rt.getCurrentSelection()
+        self.UpdateNameSet()
+    def DelectNameSet(self):
+        setName = self.select_set_list_qcombobox.currentText()
+        deselectNodes = rt.getCurrentSelection()
+        rt.select(rt.selectionSets[setName])
+        rt.deselect(deselectNodes)
+        rt.selectionSets[setName] = rt.getCurrentSelection()
         self.UpdateNameSet()
     def TestPrint(self):
         print('test')
@@ -954,6 +988,11 @@ class BipedMainWindow(QtWidgets.QDialog):
         if not result:
             self.ReStart()
         return result
+    def ConnectWidget(self):
+        self.select_set_list_qcombobox.currentIndexChanged.connect(self.SelectNameSet)
+        self.selectSetAdd_button.clicked.connect(self.AddNameSet)
+        self.select_button.clicked.connect(self.SelectNameSet)
+        self.selectSetDelectNode_button.clicked.connect(self.DelectNameSet)
     def ReStart(self):
         self.close()
         BipedMainWindow()
