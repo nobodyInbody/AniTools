@@ -99,6 +99,7 @@ class bipedSelect():
         rt.Name('rHorseTwist')
     )
     m_bipName = u''
+    m_bipKeyName = u''
     m_com = None
     m_bipNodes = {}
     m_bipedAll_nodes = []
@@ -112,6 +113,7 @@ class bipedSelect():
         self.m_bipedAll_nodes = []
         self.m_bipNodes = self.GetBipedBoneList()
         self.m_bipName = self.m_com.name
+        self.m_bipKeyName = self.m_bipName.split('_')
         #print('bipedSelect 클래스 실행 완료 시간 : {}'.format(str(timeit.default_timer() - in_time)))
         #self.log(u'바이패드 노드 정보 생성 완료')
     def log(self, text):
@@ -239,11 +241,135 @@ class GetKey():
         keys = ctrl.keys
         for key in keys:
             print(key.time)
+    def DeletedFrame(self, startFrame, endFrame):
+        # rt.animationRange = rt.interval(0, 1)
+        #프레임삭제
+        max_script = '''
+            fn GetAnimationRange_Interval target_nodeArray:(objects as Array)=
+            (
+                local keyIdex_int = 0
+                local startKeyArray = #()
+                local endKeyArray = #()
+                local startFrame = undefined
+                local endFrame = undefined
+
+                for obj in target_nodeArray do (
+                    if classof(obj.controller) == prs do (
+                        keyIdex_int = numKeys obj.pos.controller
+                        if (keyIdex_int != undefined and keyIdex_int >= 1) do
+                        (
+                            append startKeyArray (obj.pos.controller.keys[1]).time
+                            append endKeyArray (obj.pos.controller.keys[keyIdex_int]).time
+                        )
+                        keyIdex_int = numKeys obj.rotation.controller
+                        if (keyIdex_int != undefined and keyIdex_int >= 1) do
+                        (
+                            append startKeyArray (obj.rotation.controller.keys[1]).time
+                            append endKeyArray (obj.rotation.controller.keys[keyIdex_int]).time
+                        )
+                        keyIdex_int = numKeys obj.scale.controller
+                        if (keyIdex_int != undefined and keyIdex_int >= 1) do
+                        (
+                            append startKeyArray (obj.scale.controller.keys[1]).time
+                            append endKeyArray (obj.scale.controller.keys[keyIdex_int]).time
+                        )
+                    )
+                    if ClassOf obj == Biped_Object do 
+                    (
+                        keyIdex_int = numKeys obj.controller
+                        if (keyIdex_int != undefined and keyIdex_int >= 1) do
+                        (
+                            append startKeyArray (biped.getKey obj.controller 1).time
+                            append endKeyArray (biped.getKey obj.controller keyIdex_int).time
+                        )
+                    )
+                )
+                makeUniqueArray startKeyArray
+                makeUniqueArray endKeyArray
+                sort startKeyArray
+                sort endKeyArray
+
+                if startKeyArray.count > 0 then
+                (
+                    startFrame
+                    startKey_integer = 0
+                    i_int = 1
+                    --while (startFrame == undefined and i_int < startKeyArray.count  ) do (
+                    --    startKey_integer = (startKeyArray[i_int] as integer)/TicksPerFrame
+                    --    if startKey_integer > -9999 do 
+                    --    (
+                    --        startFrame = startKeyArray[i_int]
+                    --    )
+                    --    i_int = i_int + 1
+                    --)
+                    startFrame = startKeyArray[i_int]
+                    endFrame = endKeyArray[endKeyArray.count]
+                )
+                else 
+                (
+                    startFrame = 0
+                    endFrame = 1
+                )
+                if (startFrame == undefined ) do 
+                (
+                    startFrame = 0
+                )
+                if (endFrame == undefined) do 
+                (
+                    endFrame == 1
+                )
+                if (startFrame == endFrame) do 
+                (
+                    endFrame = endFrame+1
+                )
+                reInterval = Interval startFrame endFrame
+            )
+            fn OutOfFrameDelet_fn arg_objs_array =
+            (
+                local startFrame =  copy(animationRange.start.frame)
+                local endFrame =  Copy(animationRange.end.frame)
+                local goObjs_array = #()
+                local fullAniRange_interval = GetAnimationRange_Interval()
+                print fullAniRange_interval
+                goObjs_array = arg_objs_array
+                    for obj in goObjs_array do
+                    (
+                        keyIdex_int = 0
+                        obj_ctrl = obj.controller
+                        deselectKeys obj.controller
+                        selectKeys obj.controller
+                        deselectKeys obj.controller (interval startFrame endFrame)
+                        if ClassOf(obj) == biped_Object do
+                        (
+                            if (getClassName obj_ctrl == "Body") then
+                            (
+                                deleteKeys obj.controller.vertical.controller.keys #selection
+                                deleteKeys obj.controller.horizontal.controller.keys #selection
+                                deleteKeys obj.controller.turning.controller.keys #selection
+                            )
+                            else if obj.controller.keys.count > 0 do
+                            (
+                                deleteKeys obj.controller.keys #selection
+                            )
+                        )
+                        if endFrame < fullAniRange_interval.end do 
+                        (
+                            deleteTime obj (endFrame+1) (fullAniRange_interval.end + 1)
+                        )
+                        if fullAniRange_interval.start < (startFrame - 1) do 
+                        (
+                            deleteTime obj (fullAniRange_interval.start - 1) (startFrame-1) #noSlide
+                        )
+                    )
+            )
+            OutOfFrameDelet_fn (objects as Array)
+        '''
+        rt.execute(max_script)
     def GetKeyTimes(self, node):
         pass
     def SetKey(self, node):
         pass
-    def CopyKeys(self, nodes):
+    def CopyKeys(self, nodes, startFrame):
         pass
     def PasteKeys(self, nodes):
         pass
@@ -377,6 +503,9 @@ class GetBipedKey(GetKey):
                     index = getKeyIndex(rot_ctrl, this_time)
                     self.SetKeyTcb(rot_ctrl, boneGetKey, index, tcb_value_list)
         rt.redrawViews()
+    def GetAllBipedRoot(self):
+        biped_com_list = [node.controller.rootNode for node in rt.objects if node.name.endswith('Footsteps')]
+        return biped_com_list
     def CopyPose(self):
         pass
 
@@ -522,6 +651,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         if len(useing_up) < 1:
             return False
         return True
+    #region Layout
     def CreditPhalanxLayout(self, parent_layout, limb_name, target_count = (0,0), button_color = m_default_color, revers = False):
         ''' parent_layout add button 
         Is use finger or Tose'''
@@ -650,19 +780,6 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.SetBipedSelectQComboBox(qcombobox)
         title_layout.addWidget(qcombobox)
         parent_layout.addLayout(title_layout)
-    # Key def
-    def NextKeyFrame(self):
-        if rt.IsValidNode(self.m_biped_class.m_com):
-            self.m_key_class.SetSliderTimeNextKeyFrame(self.m_biped_class.m_com)
-        else:
-            self.ReStart()
-    def PreviousKeyFrame(self):
-        if rt.IsValidNode(self.m_biped_class.m_com):
-            self.m_key_class.SetSliderTimePreviousKeyFrame(self.m_biped_class.m_com)
-        else:
-            self.ReStart()
-    def AddNewKey(self):
-        self.m_key_class.SetKey(rt.selection)
     # key layout
     def AddKeyButton(self, layout, button_text, click_def, button_color = m_default_color, min_size = m_button_min_size):
         w_size, h_size = min_size
@@ -695,18 +812,7 @@ class BipedMainWindow(QtWidgets.QDialog):
         main_layout.addLayout(tcb_layout)
         #
         parent_layout.addLayout(main_layout)
-    # key biped IK def
-    def SetIKPlantedKey(self):
-        self.m_key_class.SetIK(rt.biped.setPlantedKey)
-    def SetIKSlidingKey(self):
-        self.m_key_class.SetIK(rt.biped.setSlidingKey)
-    def SetIKFreeKey(self):
-        self.m_key_class.SetIK(rt.biped.setFreeKey)
-    # key tcb def
-    def SetTcbLinear(self):
-        self.m_key_class.SetTcbValue(self.m_key_class.m_tcb_linear_value_list)
-    def SetTcbSmooth(self):
-        self.m_key_class.SetTcbValue(self.m_key_class.m_tcb_smooth_value_list)
+
     def CreateBipFileLayout(self, parent_layout):
         files_layout = QtWidgets.QHBoxLayout()
         save_bip_file_button = QtWidgets.QPushButton(self.m_bip_save_text_name, default = False, autoDefault = False)
@@ -729,11 +835,6 @@ class BipedMainWindow(QtWidgets.QDialog):
         save_file_name = u'{file_path}{file_name}_{bip_name}{extension}'.format(file_path = file_path, file_name = file_name, bip_name = bip_name, extension = extension)
         self.log(save_file_name)
         rt.biped.saveBipFile(self.m_biped_class.m_com.controller, save_file_name)
-    def OpenBipDir(self):
-        #enable = rt.ShellLaunch(self.m_bip_file_dir, "")
-        enable = rt.ShellLaunch(rt.maxfilepath, "")
-        if not enable:
-            pass
     def CreditLayout(self):
         #self.log(u'메인 레이아웃 생성한다.')
         self.m_layout_main = QtWidgets.QVBoxLayout()
@@ -752,8 +853,37 @@ class BipedMainWindow(QtWidgets.QDialog):
         for bip in self.m_biped_list:
             qcombobox.addItem(bip.m_com.name)
         qcombobox.currentIndexChanged.connect(self.ChangeBipedSet)
+    #endregion
+    #region Key def
+    # Key def
+    def NextKeyFrame(self):
+        if rt.IsValidNode(self.m_biped_class.m_com):
+            self.m_key_class.SetSliderTimeNextKeyFrame(self.m_biped_class.m_com)
+        else:
+            self.ReStart()
+    def PreviousKeyFrame(self):
+        if rt.IsValidNode(self.m_biped_class.m_com):
+            self.m_key_class.SetSliderTimePreviousKeyFrame(self.m_biped_class.m_com)
+        else:
+            self.ReStart()
+    def AddNewKey(self):
+        self.m_key_class.SetKey(rt.selection)
+    # key biped IK def
+    def SetIKPlantedKey(self):
+        self.m_key_class.SetIK(rt.biped.setPlantedKey)
+    def SetIKSlidingKey(self):
+        self.m_key_class.SetIK(rt.biped.setSlidingKey)
+    def SetIKFreeKey(self):
+        self.m_key_class.SetIK(rt.biped.setFreeKey)
+    # key tcb def
+    def SetTcbLinear(self):
+        self.m_key_class.SetTcbValue(self.m_key_class.m_tcb_linear_value_list)
+    def SetTcbSmooth(self):
+        self.m_key_class.SetTcbValue(self.m_key_class.m_tcb_smooth_value_list)
+    #endregion
     def ChangeBipedSet(self, index):
         self.m_biped_class = self.m_biped_list[index]
+        self.UpdateNameSet()
     def selectNode(self, limb_name = '', link_index = 0):
         isValidNode = self.m_biped_class.select(limb_name, link_index)
         if not isValidNode:
@@ -780,22 +910,43 @@ class BipedMainWindow(QtWidgets.QDialog):
         self.select_set_list_qcombobox = QtWidgets.QComboBox()
         self.select_button = QtWidgets.QPushButton(u'선택', default = False, autoDefault = False)
         self.select_button.clicked.connect(self.SelectNameSet)
-        select_set = rt.selectionSets
-        menu_item_list = []
-        for set in select_set:
-            # if set.name.startswith(u'sel'):
-            self.select_set_list_qcombobox.addItem(set.name)
+        self.selectSetAdd_button = QtWidgets.QPushButton(u'추가', default = False, autoDefault = False)
+        self.selectSetAdd_button.clicked.connect(lambda : self.AddNameSetObj(self.select_set_list_qcombobox.currentText(), rt.selection))
+        self.UpdateNameSet()
         #self.select_set_list_qcombobox.clicked.connect(self.SelectNameSet)
         name_set_layout.addWidget(self.select_set_list_qcombobox)
         name_set_layout.addWidget(self.select_button)
+        name_set_layout.addWidget(self.selectSetAdd_button)
         main_layout.addLayout(name_set_layout)
     def SelectNameSet(self):
         name = self.select_set_list_qcombobox.currentText()
         print(name)
         set_tiem = rt.selectionSets[name]
         rt.select(set_tiem)
+    def UpdateNameSet(self):
+        tab = self.m_select_tabWidget
+        index = tab.currentIndex()
+        name = tab.tabText(index)
+        qcombbax = self.select_set_list_qcombobox
+        qcombbax.clear()
+        select_set = rt.selectionSets
+        for set in select_set:
+            targetName = set.name.lower()
+            if targetName.startswith(name.lower()):
+                qcombbax.addItem(set.name)
+    def AddNameSetObj(self, setName, nodes):
+        selectSet = rt.selectionSets
+        rt.select(nodes)
+        rt.selectmore(selectSet[setName])
+        selectSet[setName] = rt.selection
+        self.UpdateNameSet()
     def TestPrint(self):
         print('test')
+    def OpenBipDir(self):
+        #enable = rt.ShellLaunch(self.m_bip_file_dir, "")
+        enable = rt.ShellLaunch(rt.maxfilepath, "")
+        if not enable:
+            pass
     def CreateWindows(self):
         pass
     def IsValidNode(self, node):
